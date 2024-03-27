@@ -187,7 +187,6 @@ public final class NewBlindFrame extends javax.swing.JFrame {
             } else {
                 query = "select * from " + dbName + " where " + getColumnName(dbName) + "='" + query + "'";
             }
-            // System.out.println(query); testy
             pst = connection.prepareStatement(query);
             rs = pst.executeQuery();
             rs.next();
@@ -198,7 +197,6 @@ public final class NewBlindFrame extends javax.swing.JFrame {
             blindPriceList.setName(rs.getString(2));
             blindPriceList.setPrice(rs.getDouble(priceType));
             blindPriceList.setPriceType(rs.getString("typceny"));
-            //     System.out.println(blindPriceList.getPrice()); testy
         } catch (SQLException e) {
             System.out.println(e);
         }
@@ -218,7 +216,7 @@ public final class NewBlindFrame extends javax.swing.JFrame {
 
             }
             case "mbW" -> {
-                boxPrice = ComponentPrice.runningMeter(blindPriceList.getPrice(), newBlind.getBlindHeight());
+                boxPrice = ComponentPrice.runningMeter(blindPriceList.getPrice(), newBlind.getBlindHeightWithBox()-newBlind.getBlindBox());
                 break;
 
             }

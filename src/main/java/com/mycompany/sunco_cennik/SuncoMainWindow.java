@@ -110,6 +110,7 @@ public final class SuncoMainWindow extends javax.swing.JFrame {
                     simplePrice += simpleBlind.getSimpleBlindPrice();
                 }
             }
+            System.out.println(newBlind.getBlindPrice() +" + "+ simplePrice);
             price += (newBlind.getBlindPrice() + simplePrice) * newBlind.getBlindCount();
         }
         totalPrice = String.valueOf(round(price, 2)) + " zł";

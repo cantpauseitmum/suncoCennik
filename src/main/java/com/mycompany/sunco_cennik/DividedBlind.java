@@ -149,7 +149,7 @@ public class DividedBlind extends javax.swing.JFrame {
 
             }
             case "mbW" -> {
-                boxPrice = ComponentPrice.runningMeter(blindPriceList.getPrice(), simpleBlind.getBlindHeight());
+                boxPrice = ComponentPrice.runningMeter(blindPriceList.getPrice(), simpleBlind.getBlindHeightWithBox() - simpleBlind.getBlindBox());
                 break;
 
             }
