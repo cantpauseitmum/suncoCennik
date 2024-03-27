@@ -121,6 +121,10 @@ public class NewBlind implements Serializable {
         this.blindHeightWithBox = getBlindHeight() + getBlindBox();
     }
 
+    public void setMinBlindHeightWithBox() {
+        this.blindHeightWithBox = 1.5 / getBlindWidth();
+    }
+
     public void setBlindWeight() {
         this.blindWeight = getBlindHeightWithBox() * getBlindWidth() * 3;
     }

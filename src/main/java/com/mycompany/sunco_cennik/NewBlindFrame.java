@@ -370,7 +370,7 @@ public final class NewBlindFrame extends javax.swing.JFrame {
         currentPriceLabelZloty = new javax.swing.JLabel();
         suggestedEnginePowerLabel = new javax.swing.JLabel();
 
-        setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+        setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setMinimumSize(new java.awt.Dimension(1250, 808));
         setResizable(false);
         addMouseMotionListener(new java.awt.event.MouseMotionAdapter() {
@@ -998,34 +998,35 @@ public final class NewBlindFrame extends javax.swing.JFrame {
         // TODO add your handling code here:
         if (!widthField.getText().isBlank() || !heightField.getText().isBlank() || !heightBoxField.getText().isBlank()) {
             double paramTest = Double.parseDouble(widthField.getText()) * (Double.parseDouble(heightField.getText()) + Double.parseDouble(heightBoxField.getText()));
+            newBlind.setBlindBox(0.001 * Double.parseDouble(heightBoxField.getText()));
+            newBlind.setBlindWidth(0.001 * Double.parseDouble(widthField.getText()));
+            newBlind.setBlindHeight(0.001 * Double.parseDouble(heightField.getText()));
             if (paramTest < 1500000) {
+                newBlind.setMinBlindHeightWithBox();
                 minDimLabel.setVisible(true);
             } else {
-                newBlind.setBlindBox(0.001 * Double.parseDouble(heightBoxField.getText()));
-                newBlind.setBlindWidth(0.001 * Double.parseDouble(widthField.getText()));
-                newBlind.setBlindHeight(0.001 * Double.parseDouble(heightField.getText()));
                 newBlind.setBlindHeightWithBox();
-                newBlind.setBlindWeight();
-                blindWeightLabel.setText(String.valueOf(round(newBlind.getBlindWeight(), 3)));
-                blindHeightLabel.setText(String.valueOf(1000 * round(newBlind.getBlindHeightWithBox(), 3)));
-                widthxHeightLabel.setText(String.valueOf(round(ComponentPrice.squareMeter(1, newBlind.getBlindWidth(), newBlind.getBlindHeightWithBox()), 3)));
-                setProfile();
-                double weight = newBlind.getBlindWeight();
-                String enginePower;
-                if (weight <= 6) {
-                    enginePower = "6";
-                } else if (weight > 6 && weight <= 10) {
-                    enginePower = "10";
-                } else if (weight > 10 && weight <= 15) {
-                    enginePower = "15";
-                } else if (weight > 15 && weight <= 20) {
-                    enginePower = "20";
-                } else {
-                    enginePower = "30";
-                }
-                suggestedEnginePowerLabel.setText("Sugerowana minimalna moc silnika - " + enginePower + "Nm");
                 minDimLabel.setVisible(false);
             }
+            newBlind.setBlindWeight();
+            blindWeightLabel.setText(String.valueOf(round(newBlind.getBlindWeight(), 3)));
+            blindHeightLabel.setText(String.valueOf(1000 * round(newBlind.getBlindHeightWithBox(), 3)));
+            widthxHeightLabel.setText(String.valueOf(round(ComponentPrice.squareMeter(1, newBlind.getBlindWidth(), newBlind.getBlindHeightWithBox()), 3)));
+            setProfile();
+            double weight = newBlind.getBlindWeight();
+            String enginePower;
+            if (weight <= 6) {
+                enginePower = "6";
+            } else if (weight > 6 && weight <= 10) {
+                enginePower = "10";
+            } else if (weight > 10 && weight <= 15) {
+                enginePower = "15";
+            } else if (weight > 15 && weight <= 20) {
+                enginePower = "20";
+            } else {
+                enginePower = "30";
+            }
+            suggestedEnginePowerLabel.setText("Sugerowana minimalna moc silnika - " + enginePower + "Nm");
         }
         setBlindPrice();
     }//GEN-LAST:event_formMouseMoved
