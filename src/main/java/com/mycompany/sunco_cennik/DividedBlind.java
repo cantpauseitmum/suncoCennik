@@ -4,6 +4,7 @@
  */
 package com.mycompany.sunco_cennik;
 
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.sql.Connection;
@@ -36,7 +37,7 @@ public class DividedBlind extends javax.swing.JFrame {
         initComponents();
     }
 
-    public DividedBlind(NewBlindFrame newBlindFrame, NewBlind newBlind, BlindList blindList, int divNmb) throws SQLException {
+    public DividedBlind(NewBlindFrame newBlindFrame, NewBlind newBlind, BlindList blindList, int divNmb) throws SQLException, IOException {
         this.connection = DB.connect();
         this.newBlindFrame = newBlindFrame;
         initComponents();
@@ -57,7 +58,7 @@ public class DividedBlind extends javax.swing.JFrame {
         this.pack();
     }
 
-    public DividedBlind(NewBlindFrame newBlindFrame, SimpleBlind simpleBlind, NewBlind newBlind, BlindList blindList, int divNmb) throws SQLException {
+    public DividedBlind(NewBlindFrame newBlindFrame, SimpleBlind simpleBlind, NewBlind newBlind, BlindList blindList, int divNmb) throws SQLException, IOException {
 
         this.connection = DB.connect();
         this.newBlindFrame = newBlindFrame;
@@ -97,14 +98,14 @@ public class DividedBlind extends javax.swing.JFrame {
         return "";
     }
 
-    public BlindPriceList setBoxPrice(JComboBox comboBox, String dbName) {
+    public BlindPriceList setBoxPrice(JComboBox comboBox, String dbName) throws IOException {
         String[] resultArr = comboBox.getSelectedItem().toString().split(" - ");
         BlindPriceList blindPriceList = setPrice(resultArr[0], dbName);
         blindPriceList.setName(comboBox.getSelectedItem().toString());
         return blindPriceList;
     }
 
-    public BlindPriceList setPrice(String query, String dbName) {
+    public BlindPriceList setPrice(String query, String dbName) throws IOException {
         BlindPriceList blindPriceList = new BlindPriceList();
         PreparedStatement pst;
         ResultSet rs;
@@ -121,12 +122,12 @@ public class DividedBlind extends javax.swing.JFrame {
             blindPriceList.setPrice(rs.getDouble(priceType));
             blindPriceList.setPriceType(rs.getString("typceny"));
         } catch (SQLException e) {
-            System.out.println(e);
+            ErrorLog.logError(e);
         }
         return blindPriceList;
     }
 
-    public void setSimpleBlindPrice() {
+    public void setSimpleBlindPrice() throws IOException {
         double price = 0;
         BlindPriceList blindPriceList = setPrice(newBlind.getBlindModel().getName(), "modele");
         price += calculatePrice(blindPriceList);
@@ -180,7 +181,7 @@ public class DividedBlind extends javax.swing.JFrame {
         return bd.doubleValue();
     }
 
-    public String getColumnName(String dbName) {
+    public String getColumnName(String dbName) throws IOException {
         String dbColumnName = null;
         ResultSet rs;
         PreparedStatement pst;
@@ -191,24 +192,24 @@ public class DividedBlind extends javax.swing.JFrame {
             rs.next();
             dbColumnName = rs.getString(1);
         } catch (SQLException e) {
-            System.out.println(e);
+            ErrorLog.logError(e);
         }
 
         return dbColumnName;
     }
 
-    private boolean isThere(ResultSet rs, String column) {
+    private boolean isThere(ResultSet rs, String column) throws IOException {
         try {
             rs.findColumn(column);
             return true;
-        } catch (SQLException sqlex) {
-            System.out.println(sqlex);
+        } catch (SQLException e) {
+            ErrorLog.logError(e);
         }
 
         return false;
     }
 
-    public void populateComboBox(String sqlSatement, JComboBox comboBox) {
+    public void populateComboBox(String sqlSatement, JComboBox comboBox) throws IOException {
         ResultSet rs;
         PreparedStatement pst;
         try {
@@ -221,7 +222,7 @@ public class DividedBlind extends javax.swing.JFrame {
             }
 
         } catch (SQLException e) {
-            System.out.println(e.getMessage());
+            ErrorLog.logError(e);
         }
     }
 
@@ -233,7 +234,7 @@ public class DividedBlind extends javax.swing.JFrame {
         return maxWidth;
     }
 
-    public void setSimpleBlindEngine() {
+    public void setSimpleBlindEngine() throws IOException {
         BlindPriceList blindPriceList = new BlindPriceList();
         if (!transferPowerCheckBox.isSelected()) {
             blindPriceList = setBoxPrice(mechanicalBox, "silniki");
@@ -481,9 +482,13 @@ public class DividedBlind extends javax.swing.JFrame {
     }//GEN-LAST:event_transferPowerCheckBoxActionPerformed
 
     private void nextButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_nextButtonActionPerformed
-        // TODO add your handling code here:
-        setSimpleBlindEngine();
-        setSimpleBlindPrice();
+        try {
+            // TODO add your handling code here:
+            setSimpleBlindEngine();
+            setSimpleBlindPrice();
+        } catch (IOException ex) {
+            Logger.getLogger(DividedBlind.class.getName()).log(Level.SEVERE, null, ex);
+        }
         ArrayList<SimpleBlind> tempSimpleBlindList = new ArrayList();
         if (newBlind.getSimpleBlind() != null) {
             tempSimpleBlindList.addAll(newBlind.getSimpleBlind());
@@ -496,7 +501,9 @@ public class DividedBlind extends javax.swing.JFrame {
                 dividedBlind.setLocationRelativeTo(null);
                 dividedBlind.setVisible(true);
                 this.dispose();
-            } catch (SQLException ex) {
+            } catch (SQLException e) {
+                ErrorLog.logError(e);
+            } catch (IOException ex) {
                 Logger.getLogger(DividedBlind.class.getName()).log(Level.SEVERE, null, ex);
             }
         } else {
@@ -560,7 +567,9 @@ public class DividedBlind extends javax.swing.JFrame {
             dividedBlind.setLocationRelativeTo(null);
             dividedBlind.setVisible(true);
             this.dispose();
-        } catch (SQLException ex) {
+        } catch (SQLException e) {
+            ErrorLog.logError(e);
+        } catch (IOException ex) {
             Logger.getLogger(DividedBlind.class.getName()).log(Level.SEVERE, null, ex);
         }
 

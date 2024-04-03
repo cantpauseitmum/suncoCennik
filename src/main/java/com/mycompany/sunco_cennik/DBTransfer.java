@@ -77,7 +77,7 @@ public final class DBTransfer {
             }
 
         } catch (SQLException e) {
-            System.out.println(e.getMessage());
+            ErrorLog.logError(e);
         }
         return dbList;
     }

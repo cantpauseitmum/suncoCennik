@@ -26,7 +26,7 @@ public class DB {
         try {
             return DriverManager.getConnection(jdbcUrl);
         } catch (SQLException e) {
-            System.err.println(e.getMessage());
+            ErrorLog.logError(e);
             return null;
         }
     }

@@ -127,10 +127,10 @@ public class PathSelection extends javax.swing.JFrame {
                     }
                     try {
                         new PDFCreator(file, blindList);
-                    } catch (FileNotFoundException | DocumentException ex) {
-                        Logger.getLogger(PathSelection.class.getName()).log(Level.SEVERE, null, ex);
-                    } catch (IOException ex) {
-                        Logger.getLogger(PathSelection.class.getName()).log(Level.SEVERE, null, ex);
+                    } catch (FileNotFoundException | DocumentException e) {
+                        ErrorLog.logError(e);
+                    } catch (IOException e) {
+                        ErrorLog.logError(e);
                     }
                 }
             }

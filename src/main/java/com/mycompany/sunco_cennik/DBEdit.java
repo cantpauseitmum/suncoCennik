@@ -170,8 +170,8 @@ public final class DBEdit extends javax.swing.JFrame {
         try {
             // TODO add your handling code here:
             updateDBProperties();
-        } catch (IOException ex) {
-            Logger.getLogger(DBEdit.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (IOException e) {
+            ErrorLog.logError(e);
         }
         this.dispose();
     }//GEN-LAST:event_okButtonActionPerformed

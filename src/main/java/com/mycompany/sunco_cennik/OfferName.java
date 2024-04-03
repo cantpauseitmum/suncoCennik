@@ -124,8 +124,8 @@ public class OfferName extends javax.swing.JFrame {
             blindList.offerName = jTextField1.getText();
             try {
                 new DBTransfer(suncoMainWindow, blindList, type);
-            } catch (IOException | SQLException | UnsupportedLookAndFeelException ex) {
-                Logger.getLogger(OfferName.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (IOException | SQLException | UnsupportedLookAndFeelException e) {
+                ErrorLog.logError(e);
             }
             if (type.equals("setName")) {
                 suncoMainWindow.setEnabled(true);

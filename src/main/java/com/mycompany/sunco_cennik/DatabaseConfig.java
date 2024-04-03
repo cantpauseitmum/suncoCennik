@@ -33,6 +33,7 @@ public class DatabaseConfig {
             }
             properties.load(input);
         } catch (IOException e) {
+            ErrorLog.logError(e);
         }
     }
 

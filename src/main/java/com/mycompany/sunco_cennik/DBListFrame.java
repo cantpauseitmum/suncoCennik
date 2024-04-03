@@ -151,8 +151,8 @@ public class DBListFrame extends javax.swing.JFrame {
             int id = (int) jTable1.getModel().getValueAt(jTable1.getSelectedRow(), 0);
             new SuncoMainWindow(new DBTransfer().getBlindList(id)).setVisible(true);
             this.dispose();
-        } catch (SQLException | IOException | ClassNotFoundException ex) {
-            Logger.getLogger(DBListFrame.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (SQLException | IOException | ClassNotFoundException e) {
+            ErrorLog.logError(e);
         }
 
     }//GEN-LAST:event_jButton1ActionPerformed

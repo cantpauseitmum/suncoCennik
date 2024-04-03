@@ -86,7 +86,6 @@ public final class SuncoMainWindow extends javax.swing.JFrame {
                 });
             }
         }
-        ;
         jTable1.setModel(rearangeInicies(holdingModel));
     }
 
@@ -110,7 +109,6 @@ public final class SuncoMainWindow extends javax.swing.JFrame {
                     simplePrice += simpleBlind.getSimpleBlindPrice();
                 }
             }
-            System.out.println(newBlind.getBlindPrice() +" + "+ simplePrice);
             price += (newBlind.getBlindPrice() + simplePrice) * newBlind.getBlindCount();
         }
         totalPrice = String.valueOf(round(price, 2)) + " zł";
@@ -405,8 +403,8 @@ public final class SuncoMainWindow extends javax.swing.JFrame {
             newBlindFrame.setLocationRelativeTo(null);
             newBlindFrame.pack();
             newBlindFrame.setVisible(true);
-        } catch (SQLException ex) {
-            Logger.getLogger(SuncoMainWindow.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (SQLException e) {
+            ErrorLog.logError(e);
         }
 
     }//GEN-LAST:event_addButtonActionPerformed
@@ -458,8 +456,8 @@ public final class SuncoMainWindow extends javax.swing.JFrame {
         if (dbCheckBox.isEnabled() && blindList.offerName == null) {
             try {
                 new DBTransfer(this, blindList, "toPath");
-            } catch (IOException | SQLException | UnsupportedLookAndFeelException ex) {
-                Logger.getLogger(SuncoMainWindow.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (IOException | SQLException | UnsupportedLookAndFeelException e) {
+                ErrorLog.logError(e);
             }
         } else if (dbCheckBox.isEnabled()) {
             try {
@@ -467,8 +465,8 @@ public final class SuncoMainWindow extends javax.swing.JFrame {
                 PathSelection pathSelection = new PathSelection(this, blindList, "pdf");
                 pathSelection.setLocationRelativeTo(null);
                 pathSelection.setVisible(true);
-            } catch (IOException | SQLException | UnsupportedLookAndFeelException ex) {
-                Logger.getLogger(SuncoMainWindow.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (IOException | SQLException | UnsupportedLookAndFeelException e) {
+                ErrorLog.logError(e);
             }
         } else {
             PathSelection pathSelection = new PathSelection(this, blindList, "pdf");
@@ -520,8 +518,8 @@ public final class SuncoMainWindow extends javax.swing.JFrame {
             dbListFrame.setLocationRelativeTo(null);
             dbListFrame.setVisible(true);
             this.dispose();
-        } catch (SQLException ex) {
-            Logger.getLogger(SuncoMainWindow.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (SQLException e) {
+            ErrorLog.logError(e);
         }
     }//GEN-LAST:event_jMenuItem3ActionPerformed
 
@@ -529,8 +527,8 @@ public final class SuncoMainWindow extends javax.swing.JFrame {
         try {
             this.setEnabled(false);
             new DBTransfer(this, blindList, "setName");
-        } catch (IOException | SQLException | UnsupportedLookAndFeelException ex) {
-            Logger.getLogger(SuncoMainWindow.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (IOException | SQLException | UnsupportedLookAndFeelException e) {
+            ErrorLog.logError(e);
         }
     }//GEN-LAST:event_jMenuItem4ActionPerformed
 
@@ -567,8 +565,8 @@ public final class SuncoMainWindow extends javax.swing.JFrame {
             newBlindFrame.setLocationRelativeTo(null);
             newBlindFrame.pack();
             newBlindFrame.setVisible(true);
-        } catch (SQLException ex) {
-            Logger.getLogger(SuncoMainWindow.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (SQLException e) {
+            ErrorLog.logError(e);
         }
     }//GEN-LAST:event_addButton1ActionPerformed
 
@@ -609,8 +607,8 @@ public final class SuncoMainWindow extends javax.swing.JFrame {
         java.awt.EventQueue.invokeLater(() -> {
             try {
                 new SuncoMainWindow().setVisible(true);
-            } catch (UnsupportedLookAndFeelException ex) {
-                Logger.getLogger(SuncoMainWindow.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (UnsupportedLookAndFeelException e) {
+                ErrorLog.logError(e);
             }
         });
     }

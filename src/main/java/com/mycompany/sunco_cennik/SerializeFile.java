@@ -26,10 +26,10 @@ public class SerializeFile {
         try (FileOutputStream fos = new FileOutputStream(file); ObjectOutputStream oos = new ObjectOutputStream(fos);) {
             oos.writeObject(blindList);
         } catch (FileNotFoundException e) {
-            System.out.println("File not found: " + e);
+            ErrorLog.logError(e);
             throw new RuntimeException(e);
-        } catch (IOException ioe) {
-            System.out.println("Error while writing data: " + ioe);
+        } catch (IOException e) {
+            ErrorLog.logError(e);
         }
     }
 
@@ -37,10 +37,8 @@ public class SerializeFile {
         BlindList blindList = null;
         try (FileInputStream fis = new FileInputStream(file); ObjectInputStream ois = new ObjectInputStream(fis);) {
             blindList = (BlindList) ois.readObject();
-        } catch (IOException ioe) {
-            System.out.println(ioe);
-        } catch (ClassNotFoundException c) {
-            System.out.println("Class not found: " + c);
+        } catch (IOException | ClassNotFoundException e) {
+            ErrorLog.logError(e);
         }
         return blindList;
     }

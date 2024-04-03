@@ -4,6 +4,7 @@
  */
 package com.mycompany.sunco_cennik;
 
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.List;
@@ -116,7 +117,7 @@ public final class NewBlindFrame extends javax.swing.JFrame {
             }
 
         } catch (SQLException e) {
-            System.out.println(e.getMessage());
+            ErrorLog.logError(e);
         }
     }
 
@@ -132,7 +133,7 @@ public final class NewBlindFrame extends javax.swing.JFrame {
             }
             jList.setModel(model);
         } catch (SQLException e) {
-            System.out.println(e.getMessage());
+            ErrorLog.logError(e);
         }
     }
 
@@ -147,7 +148,7 @@ public final class NewBlindFrame extends javax.swing.JFrame {
             rs.next();
             dbColumnName = rs.getString(1);
         } catch (SQLException e) {
-            System.out.println(e);
+            ErrorLog.logError(e);
         }
 
         return dbColumnName;
@@ -157,8 +158,8 @@ public final class NewBlindFrame extends javax.swing.JFrame {
         try {
             rs.findColumn(column);
             return true;
-        } catch (SQLException sqlex) {
-            System.out.println(sqlex);
+        } catch (SQLException e) {
+            ErrorLog.logError(e);
         }
 
         return false;
@@ -198,7 +199,7 @@ public final class NewBlindFrame extends javax.swing.JFrame {
             blindPriceList.setPrice(rs.getDouble(priceType));
             blindPriceList.setPriceType(rs.getString("typceny"));
         } catch (SQLException e) {
-            System.out.println(e);
+            ErrorLog.logError(e);
         }
         return blindPriceList;
     }
@@ -867,8 +868,8 @@ public final class NewBlindFrame extends javax.swing.JFrame {
                 DividedBlind dividedBlind = new DividedBlind(this, newBlind, blindList, isDivided(selAccList) - 1);
                 dividedBlind.setLocationRelativeTo(null);
                 dividedBlind.setVisible(true);
-            } catch (SQLException ex) {
-                Logger.getLogger(NewBlindFrame.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (SQLException | IOException e) {
+                ErrorLog.logError(e);
             }
         } else {
             newBlind.setBlindPrice(blindPrice);
@@ -877,8 +878,8 @@ public final class NewBlindFrame extends javax.swing.JFrame {
             suncoMainWindow.setEnabled(true);
             try {
                 connection.close();
-            } catch (SQLException ex) {
-                Logger.getLogger(NewBlindFrame.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (SQLException e) {
+                ErrorLog.logError(e);
             }
             this.dispose();
         }
@@ -888,8 +889,8 @@ public final class NewBlindFrame extends javax.swing.JFrame {
         suncoMainWindow.setEnabled(true);
         try {
             connection.close();
-        } catch (SQLException ex) {
-            Logger.getLogger(NewBlindFrame.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (SQLException e) {
+            ErrorLog.logError(e);
         }
         this.dispose();
     }//GEN-LAST:event_cancelButtonActionPerformed
