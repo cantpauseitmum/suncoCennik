@@ -5,6 +5,7 @@
 package com.mycompany.sunco_cennik;
 
 import java.io.BufferedWriter;
+import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -34,5 +35,13 @@ public class ErrorLog {
         } catch (IOException ie) {
             throw new RuntimeException("Cannot write the Exception to file", ie);
         }
+    }
+    
+    public static void clearLogs() throws IOException{
+        File  file = new File("Error-log.txt");
+        if(!file.isFile()){
+            file.createNewFile();
+        }
+        new FileWriter("Error-log.txt", false).close();
     }
 }

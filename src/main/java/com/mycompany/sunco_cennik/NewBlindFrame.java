@@ -11,8 +11,6 @@ import java.util.List;
 import javax.swing.DefaultListModel;
 import java.sql.*;
 import java.util.ArrayList;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.ComboBoxModel;
 import javax.swing.JComboBox;
 import javax.swing.JList;

@@ -31,10 +31,12 @@ public final class SuncoMainWindow extends javax.swing.JFrame {
      * Creates new form suncoMainWindow
      *
      * @throws javax.swing.UnsupportedLookAndFeelException
+     * @throws java.io.IOException
      */
-    public SuncoMainWindow() throws UnsupportedLookAndFeelException {
+    public SuncoMainWindow() throws UnsupportedLookAndFeelException, IOException {
         UIManager.setLookAndFeel(new FlatIntelliJLaf());
         initComponents();
+        ErrorLog.clearLogs();
         blindList.blindList = new ArrayList();
     }
 
@@ -405,6 +407,7 @@ public final class SuncoMainWindow extends javax.swing.JFrame {
             newBlindFrame.setVisible(true);
         } catch (SQLException e) {
             ErrorLog.logError(e);
+            this.setEnabled(true);
         }
 
     }//GEN-LAST:event_addButtonActionPerformed
@@ -529,6 +532,7 @@ public final class SuncoMainWindow extends javax.swing.JFrame {
             new DBTransfer(this, blindList, "setName");
         } catch (IOException | SQLException | UnsupportedLookAndFeelException e) {
             ErrorLog.logError(e);
+            this.setEnabled(true);
         }
     }//GEN-LAST:event_jMenuItem4ActionPerformed
 
@@ -609,6 +613,8 @@ public final class SuncoMainWindow extends javax.swing.JFrame {
                 new SuncoMainWindow().setVisible(true);
             } catch (UnsupportedLookAndFeelException e) {
                 ErrorLog.logError(e);
+            } catch (IOException ex) {
+                Logger.getLogger(SuncoMainWindow.class.getName()).log(Level.SEVERE, null, ex);
             }
         });
     }
