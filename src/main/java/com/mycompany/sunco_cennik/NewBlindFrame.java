@@ -215,7 +215,7 @@ public final class NewBlindFrame extends javax.swing.JFrame {
 
             }
             case "mbW" -> {
-                boxPrice = ComponentPrice.runningMeter(blindPriceList.getPrice(), newBlind.getBlindHeightWithBox()-newBlind.getBlindBox());
+                boxPrice = ComponentPrice.runningMeter(blindPriceList.getPrice(), newBlind.getBlindHeightWithBox() - newBlind.getBlindBox());
                 break;
 
             }
@@ -248,7 +248,7 @@ public final class NewBlindFrame extends javax.swing.JFrame {
     }
 
     public void setProfile() {
-        if (newBlind.getBlindWidth() * newBlind.getBlindHeight() > 6 || newBlind.getBlindWidth() > 2.5) {
+        if (newBlind.getBlindWidth()*newBlind.getBlindHeightWithBox() > 6 || newBlind.getBlindWidth() > 2.5) {
             newBlind.setBlindProfile("PA43");
         } else {
             newBlind.setBlindProfile("PA39");
@@ -258,10 +258,16 @@ public final class NewBlindFrame extends javax.swing.JFrame {
     public void setBlindPrice() {
         if (!(heightField.getText().equals("") || widthField.getText().equals(""))) {
             double fullBlindPrice = 0;
+            setProfile();
+            newBlind.setBlindModel(setBoxPrice(modelBox, "modele"));
             fullBlindPrice += calculatePrice(newBlind.getBlindModel());
+            newBlind.setBlindColourType(setBoxPrice(colourBox, "kolory_ceny"));
             fullBlindPrice += calculatePrice(newBlind.getBlindColourType());
+            newBlind.setBlindAuto(setBoxPrice(mechanicalBox, "silniki"));
             fullBlindPrice += calculatePrice(newBlind.getBlindAuto());
+            newBlind.setBlindAddons(setListPrice(selAccList, "dopłaty"));
             fullBlindPrice += calculatePrice(newBlind.getBlindAddons());
+            newBlind.setBlindExtras(setListPrice(selAccList2, "automatyka"));
             fullBlindPrice += calculatePrice(newBlind.getBlindExtras());
             fullBlindPrice = round(fullBlindPrice, 2);
             this.blindPrice = fullBlindPrice;
@@ -854,6 +860,7 @@ public final class NewBlindFrame extends javax.swing.JFrame {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
+    @SuppressWarnings("unused")
     private void nextButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_nextButtonActionPerformed
 
         boolean texstsOK = heightField.getText().equals("") || widthField.getText().equals("");
@@ -1009,7 +1016,6 @@ public final class NewBlindFrame extends javax.swing.JFrame {
             blindWeightLabel.setText(String.valueOf(round(newBlind.getBlindWeight(), 3)));
             blindHeightLabel.setText(String.valueOf(1000 * round(newBlind.getBlindHeightWithBox(), 3)));
             widthxHeightLabel.setText(String.valueOf(round(ComponentPrice.squareMeter(1, newBlind.getBlindWidth(), newBlind.getBlindHeightWithBox()), 3)));
-            setProfile();
             double weight = newBlind.getBlindWeight();
             String enginePower;
             if (weight <= 6) {
@@ -1028,6 +1034,7 @@ public final class NewBlindFrame extends javax.swing.JFrame {
         setBlindPrice();
     }//GEN-LAST:event_formMouseMoved
 
+    @SuppressWarnings("unused")
     private void widthxHeightLabelMouseMoved(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_widthxHeightLabelMouseMoved
         // TODO add your handling code here:
     }//GEN-LAST:event_widthxHeightLabelMouseMoved
