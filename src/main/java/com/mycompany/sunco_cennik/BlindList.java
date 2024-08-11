@@ -11,9 +11,12 @@ import java.util.ArrayList;
  *
  * @author Hubert
  */
-public class BlindList implements Serializable{
+public class BlindList implements Serializable {
 
     public String offerName;
+    public String clientName;
+    public String customOrder = "Niestandardowe prośby";
+    public Float customOrderValue = 0.0f;
     public ArrayList<NewBlind> blindList;
 
 }

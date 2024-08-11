@@ -123,7 +123,7 @@ public class PathSelection extends javax.swing.JFrame {
                         file = new File(filePath + ".pdf");
                     }
                     try {
-                        new PDFCreator(file, blindList);
+                        new PDFCreator(file, suncoMainWindow);
                     } catch (FileNotFoundException | DocumentException e) {
                         ErrorLog.logError(e);
                     } catch (IOException e) {

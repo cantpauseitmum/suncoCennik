@@ -5,6 +5,7 @@
 package com.mycompany.sunco_cennik;
 
 import java.io.IOException;
+import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import javax.swing.table.DefaultTableModel;
@@ -17,6 +18,7 @@ public class DBListFrame extends javax.swing.JFrame {
 
     ArrayList<DBList> dbList;
     BlindList blindList;
+    Connection con;
 
     /**
      * Creates new form DBListFrame
@@ -26,9 +28,10 @@ public class DBListFrame extends javax.swing.JFrame {
         initComponents();
     }
 
-    public DBListFrame(BlindList blindList) throws SQLException {
+    public DBListFrame(BlindList blindList, Connection con) throws SQLException {
         initComponents();
-        DBTransfer dbTransfer = new DBTransfer();
+        this.con = con;
+        DBTransfer dbTransfer = new DBTransfer(con);
         this.blindList = blindList;
         this.dbList = dbTransfer.getDBList();
         DefaultTableModel holdingModel = (DefaultTableModel) jTable1.getModel();
@@ -147,7 +150,7 @@ public class DBListFrame extends javax.swing.JFrame {
         try {
             // TODO add your handling code here:
             int id = (int) jTable1.getModel().getValueAt(jTable1.getSelectedRow(), 0);
-            new SuncoMainWindow(new DBTransfer().getBlindList(id)).setVisible(true);
+            new SuncoMainWindow(new DBTransfer(con).getBlindList(id)).setVisible(true);
             this.dispose();
         } catch (SQLException | IOException | ClassNotFoundException e) {
             ErrorLog.logError(e);

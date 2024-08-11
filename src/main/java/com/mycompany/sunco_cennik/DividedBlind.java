@@ -24,10 +24,9 @@ import javax.swing.JComboBox;
 public class DividedBlind extends javax.swing.JFrame {
 
     SimpleBlind simpleBlind = new SimpleBlind();
-    int divided;
+    int divided, blindIndex = -1;
     Connection connection;
     NewBlind newBlind;
-    BlindList blindList;
     NewBlindFrame newBlindFrame;
 
     /**
@@ -37,17 +36,17 @@ public class DividedBlind extends javax.swing.JFrame {
         initComponents();
     }
 
-    public DividedBlind(NewBlindFrame newBlindFrame, NewBlind newBlind, BlindList blindList, int divNmb) throws SQLException, IOException {
-        this.connection = DB.connect();
+    public DividedBlind(NewBlindFrame newBlindFrame, NewBlind newBlind, int divNmb, int blindIndex) throws SQLException, IOException {
+        this.connection = newBlindFrame.connection;
         this.newBlindFrame = newBlindFrame;
         initComponents();
+        this.blindIndex = blindIndex;
         if (divNmb == 0) {
             jButton2.setEnabled(false);
         }
         minDimLabel.setVisible(false);
         maxWidthLabel.setVisible(false);
         divided = divNmb;
-        this.blindList = blindList;
         this.newBlind = newBlind;
         if (newBlind.getSimpleBlind() == null) {
             jLabel1.setText("Pancerz nr. 1");
@@ -58,9 +57,29 @@ public class DividedBlind extends javax.swing.JFrame {
         this.pack();
     }
 
-    public DividedBlind(NewBlindFrame newBlindFrame, SimpleBlind simpleBlind, NewBlind newBlind, BlindList blindList, int divNmb) throws SQLException, IOException {
+    public DividedBlind(NewBlindFrame newBlindFrame, NewBlind newBlind, int divNmb) throws SQLException, IOException {
+        this.connection = newBlindFrame.connection;
+        this.newBlindFrame = newBlindFrame;
+        initComponents();
+        if (divNmb == 0) {
+            jButton2.setEnabled(false);
+        }
+        minDimLabel.setVisible(false);
+        maxWidthLabel.setVisible(false);
+        divided = divNmb;
+        this.newBlind = newBlind;
+        if (newBlind.getSimpleBlind() == null) {
+            jLabel1.setText("Pancerz nr. 1");
+        } else {
+            jLabel1.setText("Pancerz nr." + (newBlind.getSimpleBlind().size() + 1));
+        }
+        populateComboBox("select nazwa, moc from silniki", mechanicalBox);
+        this.pack();
+    }
 
-        this.connection = DB.connect();
+    public DividedBlind(NewBlindFrame newBlindFrame, SimpleBlind simpleBlind, NewBlind newBlind, int divNmb) throws SQLException, IOException {
+
+        this.connection = newBlindFrame.connection;
         this.newBlindFrame = newBlindFrame;
         this.simpleBlind = simpleBlind;
         newBlind.getSimpleBlind().remove(newBlind.getSimpleBlind().size() - 1);
@@ -79,7 +98,6 @@ public class DividedBlind extends javax.swing.JFrame {
         minDimLabel.setVisible(false);
         maxWidthLabel.setVisible(false);
         divided = divNmb;
-        this.blindList = blindList;
         this.newBlind = newBlind;
         if (newBlind.getSimpleBlind() == null) {
             jLabel1.setText("Pancerz nr. 1");
@@ -497,9 +515,16 @@ public class DividedBlind extends javax.swing.JFrame {
         newBlind.setSimpleBlind(tempSimpleBlindList);
         if (divided >= 0) {
             try {
-                DividedBlind dividedBlind = new DividedBlind(newBlindFrame, newBlind, blindList, divided - 1);
-                dividedBlind.setLocationRelativeTo(null);
-                dividedBlind.setVisible(true);
+                if (blindIndex >= 0) {
+                    DividedBlind dividedBlind = new DividedBlind(newBlindFrame, newBlind, divided - 1, blindIndex);
+                    dividedBlind.setLocationRelativeTo(null);
+                    dividedBlind.setVisible(true);
+                } else {
+                    DividedBlind dividedBlind = new DividedBlind(newBlindFrame, newBlind, divided - 1);
+                    dividedBlind.setLocationRelativeTo(null);
+                    dividedBlind.setVisible(true);
+                }
+
                 this.dispose();
             } catch (SQLException e) {
                 ErrorLog.logError(e);
@@ -507,8 +532,11 @@ public class DividedBlind extends javax.swing.JFrame {
                 Logger.getLogger(DividedBlind.class.getName()).log(Level.SEVERE, null, ex);
             }
         } else {
-            blindList.blindList.add(newBlind);
-            newBlindFrame.suncoMainWindow.blindList = blindList;
+            if (blindIndex >= 0) {
+                newBlindFrame.suncoMainWindow.blindList.blindList.set(blindIndex, newBlind);
+            } else {
+                newBlindFrame.suncoMainWindow.blindList.blindList.add(newBlind);
+            }
             newBlindFrame.suncoMainWindow.setEnabled(true);
             newBlindFrame.dispose();
             this.dispose();
@@ -563,7 +591,7 @@ public class DividedBlind extends javax.swing.JFrame {
     private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
         // TODO add your handling code here:
         try {
-            DividedBlind dividedBlind = new DividedBlind(newBlindFrame, newBlind.getSimpleBlind().get(newBlind.getSimpleBlind().size() - 1), newBlind, blindList, divided + 1);
+            DividedBlind dividedBlind = new DividedBlind(newBlindFrame, newBlind.getSimpleBlind().get(newBlind.getSimpleBlind().size() - 1), newBlind, divided + 1);
             dividedBlind.setLocationRelativeTo(null);
             dividedBlind.setVisible(true);
             this.dispose();

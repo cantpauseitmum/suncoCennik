@@ -9,10 +9,14 @@ import java.awt.Toolkit;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.JComboBox;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 import static javax.swing.WindowConstants.DISPOSE_ON_CLOSE;
@@ -24,20 +28,25 @@ import javax.swing.table.DefaultTableModel;
  */
 public final class SuncoMainWindow extends javax.swing.JFrame {
 
+    Connection con;
     BlindList blindList = new BlindList();
     ArrayList<NewBlind> copyPasteList = new ArrayList();
+    double currency = 1, vat = 1;
 
     /**
      * Creates new form suncoMainWindow
      *
      * @throws javax.swing.UnsupportedLookAndFeelException
      * @throws java.io.IOException
+     * @throws java.sql.SQLException
      */
-    public SuncoMainWindow() throws UnsupportedLookAndFeelException, IOException {
+    public SuncoMainWindow() throws UnsupportedLookAndFeelException, IOException, SQLException {
         UIManager.setLookAndFeel(new FlatIntelliJLaf());
         initComponents();
         ErrorLog.clearLogs();
         blindList.blindList = new ArrayList();
+        this.con = DB.connect();
+        populateComboBox("select firma from klienci", clientBox);
     }
 
     public SuncoMainWindow(BlindList blindList) {
@@ -47,7 +56,25 @@ public final class SuncoMainWindow extends javax.swing.JFrame {
             populateTable(blindList.blindList);
         }
         totalPriceLabel1.setText(totalPrice());
+        populateComboBox("select firma from klienci", clientBox);
+    }
 
+    public void populateComboBox(String sqlSatement, JComboBox comboBox) {
+        ResultSet rs;
+        PreparedStatement pst;
+        try {
+            pst = con.prepareStatement(sqlSatement);
+            rs = pst.executeQuery();
+            comboBox.removeAllItems();
+            while (rs.next()) {
+                String name = rs.getString(1);
+                comboBox.addItem(name);
+
+            }
+
+        } catch (SQLException e) {
+            ErrorLog.logError(e);
+        }
     }
 
     public void populateTable(ArrayList<NewBlind> blindList) {
@@ -68,6 +95,7 @@ public final class SuncoMainWindow extends javax.swing.JFrame {
                     newBlind.getBlindModel().getName(),
                     newBlind.getBlindCount(),
                     newBlind.getBlindColour(),
+                    newBlind.getBlindWidth() * 1000 + "x" + newBlind.getBlindHeightWithBox() * 1000,
                     blindProfiles,
                     toArray(newBlind.getBlindAddons()),
                     toArray(newBlind.getBlindExtras()),
@@ -80,11 +108,12 @@ public final class SuncoMainWindow extends javax.swing.JFrame {
                     newBlind.getBlindModel().getName(),
                     newBlind.getBlindCount(),
                     newBlind.getBlindColour(),
+                    newBlind.getBlindWidth() * 1000 + "x" + newBlind.getBlindHeightWithBox() * 1000,
                     newBlind.getBlindProfile(),
                     toArray(newBlind.getBlindAddons()),
                     toArray(newBlind.getBlindExtras()),
                     newBlind.getBlindAuto().getName(),
-                    newBlind.getBlindPrice() * newBlind.getBlindCount()
+                    newBlind.getBlindPrice() * newBlind.getBlindCount() * currency * vat
                 });
             }
         }
@@ -113,7 +142,11 @@ public final class SuncoMainWindow extends javax.swing.JFrame {
             }
             price += (newBlind.getBlindPrice() + simplePrice) * newBlind.getBlindCount();
         }
-        totalPrice = String.valueOf(round(price, 2)) + " zł";
+        String eurToPln = "zł";
+        if (currency != 1) {
+            eurToPln = "€";
+        }
+        totalPrice = String.valueOf(round(price * currency * vat, 2)) + eurToPln + " " + vatItem.getText();
         return totalPrice;
     }
 
@@ -152,6 +185,10 @@ public final class SuncoMainWindow extends javax.swing.JFrame {
         jTable1 = new javax.swing.JTable();
         dbCheckBox = new javax.swing.JCheckBox();
         addButton1 = new javax.swing.JButton();
+        clientBox = new javax.swing.JComboBox<>();
+        jButton1 = new javax.swing.JButton();
+        jButton2 = new javax.swing.JButton();
+        deleteClient = new javax.swing.JButton();
         jMenuBar1 = new javax.swing.JMenuBar();
         jMenu1 = new javax.swing.JMenu();
         jMenuItem1 = new javax.swing.JMenuItem();
@@ -163,6 +200,10 @@ public final class SuncoMainWindow extends javax.swing.JFrame {
         jMenu2 = new javax.swing.JMenu();
         jMenuItem5 = new javax.swing.JMenuItem();
         jMenuItem6 = new javax.swing.JMenuItem();
+        jmenu3 = new javax.swing.JMenu();
+        vatItem = new javax.swing.JMenuItem();
+        currencyItem = new javax.swing.JMenuItem();
+        customOrder = new javax.swing.JMenuItem();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("Sunco - wycena rolet");
@@ -228,14 +269,14 @@ public final class SuncoMainWindow extends javax.swing.JFrame {
 
             },
             new String [] {
-                "Id.", "Model rolety", "Ilość", "Kolor", "Profil", "Dodatki", "Automatyka", "Silnik", "Cena"
+                "Id.", "Model rolety", "Ilość", "Kolor", "Wymiary", "Profil", "Dodatki", "Automatyka", "Silnik", "Cena"
             }
         ) {
             Class[] types = new Class [] {
-                java.lang.Integer.class, java.lang.String.class, java.lang.Integer.class, java.lang.String.class, java.lang.String.class, java.lang.Object.class, java.lang.Object.class, java.lang.String.class, java.lang.Double.class
+                java.lang.Integer.class, java.lang.String.class, java.lang.Integer.class, java.lang.String.class, java.lang.String.class, java.lang.String.class, java.lang.Object.class, java.lang.Object.class, java.lang.String.class, java.lang.Double.class
             };
             boolean[] canEdit = new boolean [] {
-                false, false, false, false, false, false, false, false, false
+                false, false, false, false, false, false, false, false, false, false
             };
 
             public Class getColumnClass(int columnIndex) {
@@ -249,6 +290,11 @@ public final class SuncoMainWindow extends javax.swing.JFrame {
         jTable1.setAutoResizeMode(javax.swing.JTable.AUTO_RESIZE_ALL_COLUMNS);
         jTable1.setShowGrid(false);
         jScrollPane2.setViewportView(jTable1);
+        if (jTable1.getColumnModel().getColumnCount() > 0) {
+            jTable1.getColumnModel().getColumn(0).setResizable(false);
+            jTable1.getColumnModel().getColumn(1).setResizable(false);
+            jTable1.getColumnModel().getColumn(2).setResizable(false);
+        }
 
         dbCheckBox.setSelected(true);
         dbCheckBox.setText("Dołączyć do bazy");
@@ -262,6 +308,33 @@ public final class SuncoMainWindow extends javax.swing.JFrame {
         addButton1.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 addButton1ActionPerformed(evt);
+            }
+        });
+
+        clientBox.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                clientBoxActionPerformed(evt);
+            }
+        });
+
+        jButton1.setText("Nowy");
+        jButton1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton1ActionPerformed(evt);
+            }
+        });
+
+        jButton2.setText("Zmień");
+        jButton2.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton2ActionPerformed(evt);
+            }
+        });
+
+        deleteClient.setText("Usuń");
+        deleteClient.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                deleteClientActionPerformed(evt);
             }
         });
 
@@ -345,6 +418,39 @@ public final class SuncoMainWindow extends javax.swing.JFrame {
 
         jMenuBar1.add(jMenu2);
 
+        jmenu3.setText("Płatności");
+
+        vatItem.setText("Netto");
+        vatItem.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                vatItemMouseClicked(evt);
+            }
+        });
+        vatItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                vatItemActionPerformed(evt);
+            }
+        });
+        jmenu3.add(vatItem);
+
+        currencyItem.setText("PLN");
+        currencyItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                currencyItemActionPerformed(evt);
+            }
+        });
+        jmenu3.add(currencyItem);
+
+        customOrder.setText("Niestandardowe");
+        customOrder.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                customOrderActionPerformed(evt);
+            }
+        });
+        jmenu3.add(customOrder);
+
+        jMenuBar1.add(jmenu3);
+
         setJMenuBar(jMenuBar1);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
@@ -356,9 +462,18 @@ public final class SuncoMainWindow extends javax.swing.JFrame {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 785, Short.MAX_VALUE)
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                        .addComponent(addButton)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(addButton)
+                                .addGap(18, 18, 18)
+                                .addComponent(addButton1))
+                            .addComponent(clientBox, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                         .addGap(18, 18, 18)
-                        .addComponent(addButton1)
+                        .addComponent(jButton1)
+                        .addGap(7, 7, 7)
+                        .addComponent(jButton2)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(deleteClient)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(layout.createSequentialGroup()
@@ -376,14 +491,19 @@ public final class SuncoMainWindow extends javax.swing.JFrame {
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 447, Short.MAX_VALUE)
+                .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 446, Short.MAX_VALUE)
                 .addGap(18, 18, 18)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(totalPriceLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 22, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(totalPriceLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 22, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(dbCheckBox)
-                .addGap(15, 15, 15)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(dbCheckBox)
+                    .addComponent(clientBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jButton1)
+                    .addComponent(jButton2)
+                    .addComponent(deleteClient))
+                .addGap(13, 13, 13)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(finalButton)
                     .addComponent(deleteButton)
@@ -400,11 +520,20 @@ public final class SuncoMainWindow extends javax.swing.JFrame {
 
         try {
             this.setEnabled(false);
-            NewBlindFrame newBlindFrame = new NewBlindFrame(this, blindList);
-            newBlindFrame.setDefaultCloseOperation(DISPOSE_ON_CLOSE);
-            newBlindFrame.setLocationRelativeTo(null);
-            newBlindFrame.pack();
-            newBlindFrame.setVisible(true);
+            if (!blindList.blindList.isEmpty()) {
+                NewBlindFrame newBlindFrame = new NewBlindFrame(this, blindList.blindList.size() - 1);
+                newBlindFrame.setDefaultCloseOperation(DISPOSE_ON_CLOSE);
+                newBlindFrame.setLocationRelativeTo(null);
+                newBlindFrame.pack();
+                newBlindFrame.setVisible(true);
+            } else {
+                NewBlindFrame newBlindFrame = new NewBlindFrame(this);
+                newBlindFrame.setDefaultCloseOperation(DISPOSE_ON_CLOSE);
+                newBlindFrame.setLocationRelativeTo(null);
+                newBlindFrame.pack();
+                newBlindFrame.setVisible(true);
+            }
+
         } catch (SQLException e) {
             ErrorLog.logError(e);
             this.setEnabled(true);
@@ -517,7 +646,7 @@ public final class SuncoMainWindow extends javax.swing.JFrame {
 
         try {
             // TODO add your handling code here:
-            DBListFrame dbListFrame = new DBListFrame(blindList);
+            DBListFrame dbListFrame = new DBListFrame(blindList, con);
             dbListFrame.setLocationRelativeTo(null);
             dbListFrame.setVisible(true);
             this.dispose();
@@ -562,9 +691,8 @@ public final class SuncoMainWindow extends javax.swing.JFrame {
         // TODO add your handling code here:
         try {
             NewBlind newBlind = blindList.blindList.get(jTable1.getSelectedRow());
-            blindList.blindList.remove(jTable1.getSelectedRow());
             this.setEnabled(false);
-            NewBlindFrame newBlindFrame = new NewBlindFrame(this, blindList, newBlind);
+            NewBlindFrame newBlindFrame = new NewBlindFrame(this, jTable1.getSelectedRow());
             newBlindFrame.setDefaultCloseOperation(DISPOSE_ON_CLOSE);
             newBlindFrame.setLocationRelativeTo(null);
             newBlindFrame.pack();
@@ -581,6 +709,74 @@ public final class SuncoMainWindow extends javax.swing.JFrame {
         }
         totalPriceLabel1.setText(totalPrice());
     }//GEN-LAST:event_formWindowGainedFocus
+
+    private void vatItemMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_vatItemMouseClicked
+        // TODO add your handling code here:
+
+    }//GEN-LAST:event_vatItemMouseClicked
+
+    private void vatItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_vatItemActionPerformed
+        // TODO add your handling code here:
+        if ("Netto".equals(vatItem.getText())) {
+            vatItem.setText("Brutto");
+            vat = 1.23;
+        } else {
+            vatItem.setText("Netto");
+            vat = 1;
+        }
+        populateTable(blindList.blindList);
+        totalPriceLabel1.setText(totalPrice());
+    }//GEN-LAST:event_vatItemActionPerformed
+
+    private void currencyItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_currencyItemActionPerformed
+        // TODO add your handling code here:
+        if ("PLN".equals(currencyItem.getText())) {
+            currencyItem.setText("EUR");
+            currency = 0.23;
+        } else {
+            currencyItem.setText("PLN");
+            currency = 1;
+        }
+        populateTable(blindList.blindList);
+        totalPriceLabel1.setText(totalPrice());
+    }//GEN-LAST:event_currencyItemActionPerformed
+
+    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+        // TODO add your handling code here:
+        NewClientFrame newClientFrame = new NewClientFrame(this, clientBox);
+    }//GEN-LAST:event_jButton1ActionPerformed
+
+    private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
+        try {
+            // TODO add your handling code here:
+            NewClientFrame newClientFrame = new NewClientFrame(this, clientBox.getSelectedItem().toString(), clientBox);
+        } catch (SQLException ex) {
+            Logger.getLogger(SuncoMainWindow.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }//GEN-LAST:event_jButton2ActionPerformed
+
+    private void clientBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_clientBoxActionPerformed
+        // TODO add your handling code here:
+        if (clientBox.getSelectedItem() != null) {
+            blindList.clientName = clientBox.getSelectedItem().toString();
+        }
+    }//GEN-LAST:event_clientBoxActionPerformed
+
+    private void deleteClientActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_deleteClientActionPerformed
+        try {
+            // TODO add your handling code here:
+            PreparedStatement pst = con.prepareStatement("delete from klienci where firma = '" + clientBox.getSelectedItem().toString() + "'");
+            pst.executeUpdate();
+            populateComboBox("select firma from klienci", clientBox);
+        } catch (SQLException ex) {
+            Logger.getLogger(SuncoMainWindow.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }//GEN-LAST:event_deleteClientActionPerformed
+
+    private void customOrderActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_customOrderActionPerformed
+        // TODO add your handling code here:
+        CustomOrderFrame customOrderFrame = new CustomOrderFrame(this);
+    }//GEN-LAST:event_customOrderActionPerformed
 
     /**
      * @param args the command line arguments
@@ -613,7 +809,7 @@ public final class SuncoMainWindow extends javax.swing.JFrame {
                 new SuncoMainWindow().setVisible(true);
             } catch (UnsupportedLookAndFeelException e) {
                 ErrorLog.logError(e);
-            } catch (IOException ex) {
+            } catch (IOException | SQLException ex) {
                 Logger.getLogger(SuncoMainWindow.class.getName()).log(Level.SEVERE, null, ex);
             }
         });
@@ -622,11 +818,17 @@ public final class SuncoMainWindow extends javax.swing.JFrame {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton addButton;
     private javax.swing.JButton addButton1;
+    private javax.swing.JComboBox<String> clientBox;
+    private javax.swing.JMenuItem currencyItem;
+    private javax.swing.JMenuItem customOrder;
     private javax.swing.JCheckBox dbCheckBox;
     private javax.swing.JMenuItem dbEditMenuItem;
     private javax.swing.JMenu dbMenu;
     private javax.swing.JButton deleteButton;
+    private javax.swing.JButton deleteClient;
     private javax.swing.JButton finalButton;
+    private javax.swing.JButton jButton1;
+    private javax.swing.JButton jButton2;
     private javax.swing.JMenu jMenu1;
     private javax.swing.JMenu jMenu2;
     private javax.swing.JMenuBar jMenuBar1;
@@ -638,7 +840,9 @@ public final class SuncoMainWindow extends javax.swing.JFrame {
     private javax.swing.JMenuItem jMenuItem6;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JTable jTable1;
+    private javax.swing.JMenu jmenu3;
     private javax.swing.JLabel totalPriceLabel;
     private javax.swing.JLabel totalPriceLabel1;
+    private javax.swing.JMenuItem vatItem;
     // End of variables declaration//GEN-END:variables
 }

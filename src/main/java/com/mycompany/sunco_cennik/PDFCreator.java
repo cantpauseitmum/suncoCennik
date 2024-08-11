@@ -25,37 +25,45 @@ import java.util.ArrayList;
  */
 public final class PDFCreator {
 
-    public PDFCreator(File file, BlindList blindList) throws FileNotFoundException, DocumentException, IOException {
-        createDocument(file, blindList);
+    public PDFCreator(File file, SuncoMainWindow suncoMainWindow) throws FileNotFoundException, DocumentException, IOException {
+        createDocument(file, suncoMainWindow);
     }
 
-    public void createDocument(File file, BlindList blindList) throws FileNotFoundException, DocumentException, IOException {
+    public void createDocument(File file, SuncoMainWindow suncoMainWindow) throws FileNotFoundException, DocumentException, IOException {
         Document doc = new Document(PageSize.A4);
         Font regular = new Font(BaseFont.createFont("arialuni-Regular.ttf", BaseFont.IDENTITY_H, BaseFont.EMBEDDED), 14);
         Font bold = new Font(BaseFont.createFont("arialuni-Bold.ttf", BaseFont.IDENTITY_H, BaseFont.EMBEDDED), 14);
         PdfWriter.getInstance(doc, new FileOutputStream(file));
         doc.open();
         double totalValue = 0;
-        for (NewBlind newBlind : blindList.blindList) {
+        String currency = "zł", vat = "Netto";
+        if (suncoMainWindow.currency != 1) {
+            currency = "€";
+        }
+        if (suncoMainWindow.vat != 1) {
+            vat = "Brutto";
+        }
+        for (NewBlind newBlind : suncoMainWindow.blindList.blindList) {
             totalValue += newBlind.getBlindCount() * newBlind.getBlindPrice();
             if (newBlind.getSimpleBlind() != null) {
                 for (SimpleBlind simpleBlind : newBlind.getSimpleBlind()) {
                     totalValue += simpleBlind.getSimpleBlindPrice() * newBlind.getBlindCount();
                 }
             }
-            writeBlind(newBlind, regular, bold, doc);
+            writeBlind(newBlind, regular, bold, doc, currency);
         }
-        doc.add(writePara("RAZEM: " + String.valueOf(round(totalValue, 2)) + "zł", Paragraph.ALIGN_RIGHT, bold));
+        totalValue += suncoMainWindow.blindList.customOrderValue;
+        doc.add(writePara("RAZEM: " + String.valueOf(round(totalValue, 2)) + currency + " " + vat, Paragraph.ALIGN_RIGHT, bold));
         doc.close();
     }
 
-    public void writeBlind(NewBlind newBlind, Font regular, Font bold, Document doc) throws DocumentException {
+    public void writeBlind(NewBlind newBlind, Font regular, Font bold, Document doc, String currency) throws DocumentException {
         doc.add(writePara("Ilość: " + String.valueOf(newBlind.getBlindCount()), Paragraph.ALIGN_RIGHT, bold));
         String pricePara;
         if (newBlind.getSimpleBlind() == null) {
-            pricePara = String.valueOf(round(newBlind.getBlindPrice(), 2)) + "zł";
+            pricePara = String.valueOf(round(newBlind.getBlindPrice(), 2)) + currency;
         } else {
-            pricePara = String.valueOf(round(getFullPrice(newBlind), 2)) + "zł";
+            pricePara = String.valueOf(round(getFullPrice(newBlind), 2)) + currency;
         }
         doc.add(writePara("Cena/szt: " + pricePara, Paragraph.ALIGN_RIGHT, bold));
         doc.add(writePara("Model: " + newBlind.getBlindModel().getName(), Paragraph.ALIGN_RIGHT, regular));

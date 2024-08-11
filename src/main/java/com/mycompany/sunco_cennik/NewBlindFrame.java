@@ -11,6 +11,8 @@ import java.util.List;
 import javax.swing.DefaultListModel;
 import java.sql.*;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
 import javax.swing.ComboBoxModel;
 import javax.swing.JComboBox;
 import javax.swing.JList;
@@ -24,8 +26,10 @@ public final class NewBlindFrame extends javax.swing.JFrame {
     Connection connection;
     double blindPrice;
     NewBlind newBlind = new NewBlind();
-    BlindList blindList;
     SuncoMainWindow suncoMainWindow;
+    int blindIndex = -1;
+    boolean profileLock = false;
+    private javax.swing.JList<String> hiddenList = new JList();
 
     /**
      * Creates new form NewBlindFrame
@@ -41,16 +45,15 @@ public final class NewBlindFrame extends javax.swing.JFrame {
         minDimLabel.setVisible(false);
     }
 
-    public NewBlindFrame(SuncoMainWindow suncoMainWindow, BlindList blindList, NewBlind newBlind) throws SQLException {
+    public NewBlindFrame(SuncoMainWindow suncoMainWindow, int blindIndex) throws SQLException {
         initComponents();
-        this.connection = DB.connect();
+        this.blindIndex = blindIndex;
+        this.connection = suncoMainWindow.con;
         this.suncoMainWindow = suncoMainWindow;
-        this.blindList = blindList;
         populateBlindTables();
-        this.newBlind = newBlind;
-        this.modelBox.getModel();
+        this.newBlind = suncoMainWindow.blindList.blindList.get(blindIndex);
         this.modelBox.setSelectedItem(setComboBox(modelBox.getModel(), newBlind.getBlindModel().getName()));
-        this.colourBox.setSelectedItem(setComboBox(colourBox.getModel(), newBlind.getBlindColourType().getName()));
+        this.colourBox.setSelectedItem(setComboBox(colourBox.getModel(), newBlind.getBlindColour()));
         this.mechanicalBox.setSelectedItem(setComboBox(mechanicalBox.getModel(), newBlind.getBlindAuto().getName()));
         if (newBlind.getBlindAddons() != null) {
             setList(this.selAccList, newBlind.getBlindAddons());
@@ -60,17 +63,16 @@ public final class NewBlindFrame extends javax.swing.JFrame {
         }
         this.heightBoxField.setText(String.valueOf(1000 * newBlind.getBlindBox()));
         this.widthField.setText(String.valueOf(1000 * newBlind.getBlindWidth()));
-        this.heightField.setText(String.valueOf(1000 * newBlind.getBlindHeight()));
+        this.heightField.setText(String.valueOf(1000 * newBlind.getBlindHeightWithBox()));
         quantitySpinner.setValue(newBlind.getBlindCount());
         warningLabel.setVisible(false);
         minDimLabel.setVisible(false);
     }
 
-    public NewBlindFrame(SuncoMainWindow suncoMainWindow, BlindList blindList) throws SQLException {
+    public NewBlindFrame(SuncoMainWindow suncoMainWindow) throws SQLException {
         initComponents();
         this.suncoMainWindow = suncoMainWindow;
-        this.connection = DB.connect();
-        this.blindList = blindList;
+        this.connection = suncoMainWindow.con;
         populateBlindTables();
         newBlind.setBlindCount((int) quantitySpinner.getValue());
         warningLabel.setVisible(false);
@@ -164,8 +166,10 @@ public final class NewBlindFrame extends javax.swing.JFrame {
     }
 
     public BlindPriceList setBoxPrice(JComboBox comboBox, String dbName) {
+
         String[] resultArr = comboBox.getSelectedItem().toString().split(" - ");
         return setPrice(resultArr[0], resultArr[1], dbName);
+
     }
 
     public ArrayList<BlindPriceList> setListPrice(JList jList, String dbName) {
@@ -193,7 +197,11 @@ public final class NewBlindFrame extends javax.swing.JFrame {
             if (newBlind.getBlindProfile().equals("PA43") && isThere(rs, "pa43cena") && rs.getDouble("pa43cena") != 0) {
                 priceType = "pa43cena";
             }
-            blindPriceList.setName(rs.getString(2));
+            if (dbName.equals("silniki")) {
+                blindPriceList.setName(rs.getString(2) + " - " + rs.getString(3));
+            } else {
+                blindPriceList.setName(rs.getString(2));
+            }
             blindPriceList.setPrice(rs.getDouble(priceType));
             blindPriceList.setPriceType(rs.getString("typceny"));
         } catch (SQLException e) {
@@ -248,7 +256,7 @@ public final class NewBlindFrame extends javax.swing.JFrame {
     }
 
     public void setProfile() {
-        if (newBlind.getBlindWidth()*newBlind.getBlindHeightWithBox() > 6 || newBlind.getBlindWidth() > 2.5) {
+        if (newBlind.getBlindWidth() * newBlind.getBlindHeightWithBox() > 6 || newBlind.getBlindWidth() > 2.5) {
             newBlind.setBlindProfile("PA43");
         } else {
             newBlind.setBlindProfile("PA39");
@@ -258,20 +266,42 @@ public final class NewBlindFrame extends javax.swing.JFrame {
     public void setBlindPrice() {
         if (!(heightField.getText().equals("") || widthField.getText().equals(""))) {
             double fullBlindPrice = 0;
-            setProfile();
+            if (!profileLock) {
+                setProfile();
+
+            }
+            profileTogglejButton.setText(newBlind.getBlindProfile());
             newBlind.setBlindModel(setBoxPrice(modelBox, "modele"));
             fullBlindPrice += calculatePrice(newBlind.getBlindModel());
+//            System.out.println(fullBlindPrice);
             newBlind.setBlindColourType(setBoxPrice(colourBox, "kolory_ceny"));
             fullBlindPrice += calculatePrice(newBlind.getBlindColourType());
+//            System.out.println(fullBlindPrice);
             newBlind.setBlindAuto(setBoxPrice(mechanicalBox, "silniki"));
             fullBlindPrice += calculatePrice(newBlind.getBlindAuto());
+//            System.out.println(fullBlindPrice);
             newBlind.setBlindAddons(setListPrice(selAccList, "dopłaty"));
             fullBlindPrice += calculatePrice(newBlind.getBlindAddons());
+//            System.out.println(fullBlindPrice);
             newBlind.setBlindExtras(setListPrice(selAccList2, "automatyka"));
             fullBlindPrice += calculatePrice(newBlind.getBlindExtras());
+//            System.out.println(fullBlindPrice);
+            String currency;
+            if (suncoMainWindow.currency == 1) {
+                currency = "zł";
+            } else {
+                currency = "€";
+            }
+            String vat;
+            if (suncoMainWindow.vat == 1) {
+                vat = "Netto";
+            } else {
+                vat = "Brutto";
+            }
+            double fakePrice = round(fullBlindPrice * suncoMainWindow.currency * suncoMainWindow.vat, 2);
             fullBlindPrice = round(fullBlindPrice, 2);
             this.blindPrice = fullBlindPrice;
-            currentPriceLabelZloty.setText(String.valueOf(fullBlindPrice * newBlind.getBlindCount()) + "zł");
+            currentPriceLabelZloty.setText(String.valueOf(fakePrice * newBlind.getBlindCount()) + currency + " " + vat);
         }
     }
 
@@ -372,6 +402,9 @@ public final class NewBlindFrame extends javax.swing.JFrame {
         currentPriceLabel = new javax.swing.JLabel();
         currentPriceLabelZloty = new javax.swing.JLabel();
         suggestedEnginePowerLabel = new javax.swing.JLabel();
+        jPanel6 = new javax.swing.JPanel();
+        profileTogglejButton = new javax.swing.JToggleButton();
+        profilejLabel = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setMinimumSize(new java.awt.Dimension(1250, 808));
@@ -394,6 +427,9 @@ public final class NewBlindFrame extends javax.swing.JFrame {
         addWindowListener(new java.awt.event.WindowAdapter() {
             public void windowActivated(java.awt.event.WindowEvent evt) {
                 formWindowActivated(evt);
+            }
+            public void windowClosing(java.awt.event.WindowEvent evt) {
+                formWindowClosing(evt);
             }
         });
 
@@ -438,7 +474,7 @@ public final class NewBlindFrame extends javax.swing.JFrame {
         });
 
         heightLabel.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
-        heightLabel.setText("Wysokość okna [mm]:");
+        heightLabel.setText("Wysokość [mm]:");
 
         widthField.setMinimumSize(new java.awt.Dimension(100, 22));
         widthField.setPreferredSize(new java.awt.Dimension(100, 22));
@@ -449,7 +485,7 @@ public final class NewBlindFrame extends javax.swing.JFrame {
         });
 
         widthLabel.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
-        widthLabel.setText("Szerokość okna [mm]:");
+        widthLabel.setText("Szerokość [mm]:");
 
         widthLabel1.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
         widthLabel1.setText("Wysokość skrzynki [mm]:");
@@ -476,7 +512,7 @@ public final class NewBlindFrame extends javax.swing.JFrame {
         blindWeightLabel.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
 
         currentWidthxHeightLabel.setFont(new java.awt.Font("Segoe UI", 3, 12)); // NOI18N
-        currentWidthxHeightLabel.setText("Powierzchnia pancerza [m2]:");
+        currentWidthxHeightLabel.setText("Powierzchnia rolety [m2]:");
 
         widthxHeightLabel.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
         widthxHeightLabel.addMouseMotionListener(new java.awt.event.MouseMotionAdapter() {
@@ -556,12 +592,22 @@ public final class NewBlindFrame extends javax.swing.JFrame {
         );
 
         fullAccList2.setFixedCellHeight(15);
+        fullAccList2.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                fullAccList2MouseClicked(evt);
+            }
+        });
         jScrollPane6.setViewportView(fullAccList2);
 
         mechAddBox.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
         mechAddBox.setText("Automatyka - dodatki:");
 
         selAccList2.setFixedCellHeight(15);
+        selAccList2.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                selAccList2MouseClicked(evt);
+            }
+        });
         jScrollPane7.setViewportView(selAccList2);
 
         jScrollPane8.setViewportView(fullAccList3);
@@ -616,6 +662,11 @@ public final class NewBlindFrame extends javax.swing.JFrame {
         );
 
         fullAccList.setFixedCellHeight(20);
+        fullAccList.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                fullAccListMouseClicked(evt);
+            }
+        });
         jScrollPane3.setViewportView(fullAccList);
 
         addAccButton.setText("Dodaj");
@@ -633,6 +684,11 @@ public final class NewBlindFrame extends javax.swing.JFrame {
         });
 
         selAccList.setFixedCellHeight(20);
+        selAccList.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                selAccListMouseClicked(evt);
+            }
+        });
         jScrollPane1.setViewportView(selAccList);
 
         jScrollPane4.setViewportView(fullAccList1);
@@ -781,6 +837,26 @@ public final class NewBlindFrame extends javax.swing.JFrame {
         suggestedEnginePowerLabel.setFont(new java.awt.Font("Segoe UI", 3, 12)); // NOI18N
         suggestedEnginePowerLabel.setText("Sugerowana minimalna moc silnika - ");
 
+        javax.swing.GroupLayout jPanel6Layout = new javax.swing.GroupLayout(jPanel6);
+        jPanel6.setLayout(jPanel6Layout);
+        jPanel6Layout.setHorizontalGroup(
+            jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 70, Short.MAX_VALUE)
+        );
+        jPanel6Layout.setVerticalGroup(
+            jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 69, Short.MAX_VALUE)
+        );
+
+        profileTogglejButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                profileTogglejButtonActionPerformed(evt);
+            }
+        });
+
+        profilejLabel.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
+        profilejLabel.setText("Profil:");
+
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
@@ -790,6 +866,9 @@ public final class NewBlindFrame extends javax.swing.JFrame {
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(jPanel1Layout.createSequentialGroup()
                         .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(mechanicalBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(mechanicalLabel)
+                            .addComponent(suggestedEnginePowerLabel)
                             .addGroup(jPanel1Layout.createSequentialGroup()
                                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                     .addComponent(modelLabel)
@@ -798,14 +877,15 @@ public final class NewBlindFrame extends javax.swing.JFrame {
                                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                     .addComponent(colourBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                                     .addComponent(colourLabel))
-                                .addGap(0, 0, Short.MAX_VALUE))
+                                .addGap(57, 57, 57)
+                                .addComponent(jPanel6, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addGroup(jPanel1Layout.createSequentialGroup()
-                                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(mechanicalBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addComponent(mechanicalLabel)
-                                    .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addComponent(suggestedEnginePowerLabel))
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 78, Short.MAX_VALUE)))
+                                .addGap(6, 6, 6)
+                                .addComponent(profilejLabel)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                .addComponent(profileTogglejButton)))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 181, Short.MAX_VALUE)
                         .addComponent(jPanel3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addComponent(jPanel4, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
@@ -817,17 +897,24 @@ public final class NewBlindFrame extends javax.swing.JFrame {
                 .addContainerGap()
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addGap(13, 13, 13)
-                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(colourLabel)
-                            .addComponent(modelLabel))
+                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jPanel6, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addGroup(jPanel1Layout.createSequentialGroup()
+                                .addGap(13, 13, 13)
+                                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                                    .addComponent(colourLabel)
+                                    .addComponent(modelLabel))
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                                    .addComponent(colourBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(modelBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(colourBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(modelBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addGap(18, 18, 18)
                         .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(29, 29, 29)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(profilejLabel)
+                            .addComponent(profileTogglejButton, javax.swing.GroupLayout.PREFERRED_SIZE, 23, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(suggestedEnginePowerLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 22, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(mechanicalLabel)
@@ -860,61 +947,9 @@ public final class NewBlindFrame extends javax.swing.JFrame {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-    @SuppressWarnings("unused")
-    private void nextButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_nextButtonActionPerformed
-
-        boolean texstsOK = heightField.getText().equals("") || widthField.getText().equals("");
-        if (texstsOK) {
-            warningLabel.setVisible(true);
-        } else if (!texstsOK && isDivided(selAccList) > 0) {
-            try {
-                newBlind.setSimpleBlind(null);
-                setSemiBlindPrice();
-                DividedBlind dividedBlind = new DividedBlind(this, newBlind, blindList, isDivided(selAccList) - 1);
-                dividedBlind.setLocationRelativeTo(null);
-                dividedBlind.setVisible(true);
-            } catch (SQLException | IOException e) {
-                ErrorLog.logError(e);
-            }
-        } else {
-            newBlind.setBlindPrice(blindPrice);
-            blindList.blindList.add(newBlind);
-            suncoMainWindow.blindList = blindList;
-            suncoMainWindow.setEnabled(true);
-            try {
-                connection.close();
-            } catch (SQLException e) {
-                ErrorLog.logError(e);
-            }
-            this.dispose();
-        }
-    }//GEN-LAST:event_nextButtonActionPerformed
-
-    private void cancelButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cancelButtonActionPerformed
-        suncoMainWindow.setEnabled(true);
-        try {
-            connection.close();
-        } catch (SQLException e) {
-            ErrorLog.logError(e);
-        }
-        this.dispose();
-    }//GEN-LAST:event_cancelButtonActionPerformed
-
     private void formWindowActivated(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowActivated
         // TODO add your handling code here:
     }//GEN-LAST:event_formWindowActivated
-
-    private void rmAccButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_rmAccButtonActionPerformed
-        // TODO add your handling code here:
-        DefaultListModel dlm = (DefaultListModel) selAccList.getModel();
-        if (this.selAccList.getSelectedIndices().length > 0) {
-            int[] selectedIndices = selAccList.getSelectedIndices();
-            for (int i = selectedIndices.length - 1; i >= 0; i--) {
-                dlm.removeElementAt(selectedIndices[i]);
-            }
-        }
-        newBlind.setBlindAddons(setListPrice(selAccList, "dopłaty"));
-    }//GEN-LAST:event_rmAccButtonActionPerformed
 
     public void addToList(JList<String> fullList, JList<String> selList) {
         List copied = fullList.getSelectedValuesList();
@@ -922,100 +957,31 @@ public final class NewBlindFrame extends javax.swing.JFrame {
         for (int i = 0; i < selList.getModel().getSize(); i++) {
             model.addElement(selList.getModel().getElementAt(i));
         }
-        for (int i = 0; i < copied.size(); i++) {
-            model.addElement(copied.get(i));
-        }
+        model.addAll(copied);
         selList.setModel(model);
     }
-    private void addAccButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addAccButtonActionPerformed
-        // TODO add your handling code here:
-        addToList(fullAccList, selAccList);
-        newBlind.setBlindAddons(setListPrice(selAccList, "dopłaty"));
-    }//GEN-LAST:event_addAccButtonActionPerformed
-
-    private void rmAccButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_rmAccButton2ActionPerformed
-        // TODO add your handling code here:
-        DefaultListModel dlm = (DefaultListModel) selAccList2.getModel();
-        if (this.selAccList2.getSelectedIndices().length > 0) {
-            int[] selectedIndices = selAccList2.getSelectedIndices();
-            for (int i = selectedIndices.length - 1; i >= 0; i--) {
-                dlm.removeElementAt(selectedIndices[i]);
-            }
-        }
-        newBlind.setBlindExtras(setListPrice(selAccList2, "automatyka"));
-    }//GEN-LAST:event_rmAccButton2ActionPerformed
-
-    private void addAccButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addAccButton2ActionPerformed
-        // TODO add your handling code here:
-        addToList(fullAccList2, selAccList2);
-        newBlind.setBlindExtras(setListPrice(selAccList2, "automatyka"));
-
-    }//GEN-LAST:event_addAccButton2ActionPerformed
-
-    private void widthFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_widthFieldActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_widthFieldActionPerformed
-
-    private void heightFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_heightFieldActionPerformed
-
-    }//GEN-LAST:event_heightFieldActionPerformed
-
-    private void heightFieldFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_heightFieldFocusLost
-        // TODO add your handling code here:
-
-    }//GEN-LAST:event_heightFieldFocusLost
-
-    private void mechanicalBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mechanicalBoxActionPerformed
-        // TODO add your handling code here:
-        newBlind.setBlindAuto(setBoxPrice(mechanicalBox, "silniki"));
-    }//GEN-LAST:event_mechanicalBoxActionPerformed
-
-    private void colourBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_colourBoxActionPerformed
-        newBlind.setBlindColour(colourBox.getSelectedItem().toString());
-        newBlind.setBlindColourType(setBoxPrice(colourBox, "kolory_ceny"));
-    }//GEN-LAST:event_colourBoxActionPerformed
-
-    private void modelBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_modelBoxActionPerformed
-        // TODO add your handling code here:
-        newBlind.setBlindModel(setBoxPrice(modelBox, "modele"));
-    }//GEN-LAST:event_modelBoxActionPerformed
-
     private void formMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_formMouseClicked
         // TODO add your handling code here:
     }//GEN-LAST:event_formMouseClicked
-
-    private void quantitySpinnerPropertyChange(java.beans.PropertyChangeEvent evt) {//GEN-FIRST:event_quantitySpinnerPropertyChange
-        // TODO add your handling code here:
-
-    }//GEN-LAST:event_quantitySpinnerPropertyChange
-
-    private void quantitySpinnerStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_quantitySpinnerStateChanged
-        // TODO add your handling code here:
-        newBlind.setBlindCount((int) quantitySpinner.getValue());
-    }//GEN-LAST:event_quantitySpinnerStateChanged
-
-    private void heightBoxFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_heightBoxFieldActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_heightBoxFieldActionPerformed
 
     private void formMouseMoved(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_formMouseMoved
         // TODO add your handling code here:
         if (!widthField.getText().isBlank() || !heightField.getText().isBlank() || !heightBoxField.getText().isBlank()) {
             double paramTest = Double.parseDouble(widthField.getText()) * (Double.parseDouble(heightField.getText()) + Double.parseDouble(heightBoxField.getText()));
-            newBlind.setBlindBox(0.001 * Double.parseDouble(heightBoxField.getText()));
-            newBlind.setBlindWidth(0.001 * Double.parseDouble(widthField.getText()));
-            newBlind.setBlindHeight(0.001 * Double.parseDouble(heightField.getText()));
+            newBlind.setBlindBox(round(0.001 * Double.parseDouble(heightBoxField.getText()), 3));
+            newBlind.setBlindWidth(round(0.001 * Double.parseDouble(widthField.getText()), 3));
             if (paramTest < 1500000) {
                 newBlind.setMinBlindHeightWithBox();
                 minDimLabel.setVisible(true);
             } else {
-                newBlind.setBlindHeightWithBox();
+                newBlind.setBlindHeightWithBox(round(0.001 * Double.parseDouble(heightField.getText()), 3));
                 minDimLabel.setVisible(false);
             }
+            newBlind.setBlindHeight();
             newBlind.setBlindWeight();
-            blindWeightLabel.setText(String.valueOf(round(newBlind.getBlindWeight(), 3)));
+            blindWeightLabel.setText(String.valueOf(round(newBlind.getBlindWeight(), 2)));
             blindHeightLabel.setText(String.valueOf(1000 * round(newBlind.getBlindHeightWithBox(), 3)));
-            widthxHeightLabel.setText(String.valueOf(round(ComponentPrice.squareMeter(1, newBlind.getBlindWidth(), newBlind.getBlindHeightWithBox()), 3)));
+            widthxHeightLabel.setText(String.valueOf(round(ComponentPrice.squareMeter(1, newBlind.getBlindWidth(), newBlind.getBlindHeightWithBox()), 2)));
             double weight = newBlind.getBlindWeight();
             String enginePower;
             if (weight <= 6) {
@@ -1034,14 +1000,211 @@ public final class NewBlindFrame extends javax.swing.JFrame {
         setBlindPrice();
     }//GEN-LAST:event_formMouseMoved
 
+    private void formFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_formFocusGained
+        // TODO add your handling code here:
+    }//GEN-LAST:event_formFocusGained
+
+    private void profileTogglejButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_profileTogglejButtonActionPerformed
+        // TODO add your handling code here:
+        profileLock = true;
+        if ("PA39".equals(newBlind.getBlindProfile())) {
+            newBlind.setBlindProfile("PA43");
+        } else {
+            newBlind.setBlindProfile("PA39");
+        }
+    }//GEN-LAST:event_profileTogglejButtonActionPerformed
+
+    private void quantitySpinnerPropertyChange(java.beans.PropertyChangeEvent evt) {//GEN-FIRST:event_quantitySpinnerPropertyChange
+        // TODO add your handling code here:
+    }//GEN-LAST:event_quantitySpinnerPropertyChange
+
+    private void quantitySpinnerStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_quantitySpinnerStateChanged
+        // TODO add your handling code here:
+        newBlind.setBlindCount((int) quantitySpinner.getValue());
+    }//GEN-LAST:event_quantitySpinnerStateChanged
+
+    private void cancelButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cancelButtonActionPerformed
+        suncoMainWindow.setEnabled(true);
+        this.dispose();
+    }//GEN-LAST:event_cancelButtonActionPerformed
+
+    @SuppressWarnings("unused")
+    private void nextButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_nextButtonActionPerformed
+
+        boolean texstsOK = heightField.getText().equals("") || widthField.getText().equals("");
+        newBlind.setSimpleBlind(null);
+        if (texstsOK) {
+            warningLabel.setVisible(true);
+        } else if (!texstsOK && isDivided(selAccList) > 0) {
+            try {
+                setSemiBlindPrice();
+                if (blindIndex >= 0) {
+                    DividedBlind dividedBlind = new DividedBlind(this, newBlind, isDivided(selAccList) - 1, blindIndex);
+                    dividedBlind.setLocationRelativeTo(null);
+                    dividedBlind.setVisible(true);
+                } else {
+                    DividedBlind dividedBlind = new DividedBlind(this, newBlind, isDivided(selAccList) - 1);
+                    dividedBlind.setLocationRelativeTo(null);
+                    dividedBlind.setVisible(true);
+                }
+
+            } catch (SQLException | IOException e) {
+                ErrorLog.logError(e);
+            }
+        } else {
+            newBlind.setBlindPrice(blindPrice);
+            if (blindIndex >= 0) {
+                suncoMainWindow.blindList.blindList.set(blindIndex, newBlind);
+            } else {
+                suncoMainWindow.blindList.blindList.add(newBlind);
+            }
+
+            suncoMainWindow.setEnabled(true);
+            this.dispose();
+        }
+    }//GEN-LAST:event_nextButtonActionPerformed
+
+    private void rmAccButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_rmAccButtonActionPerformed
+        // TODO add your handling code here:
+        DefaultListModel dlm = (DefaultListModel) selAccList.getModel();
+        if (this.selAccList.getSelectedIndices().length > 0) {
+            int[] selectedIndices = selAccList.getSelectedIndices();
+            for (int i = selectedIndices.length - 1; i >= 0; i--) {
+                dlm.removeElementAt(selectedIndices[i]);
+            }
+        }
+        newBlind.setBlindAddons(setListPrice(selAccList, "dopłaty"));
+    }//GEN-LAST:event_rmAccButtonActionPerformed
+
+    private void addAccButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addAccButtonActionPerformed
+        // TODO add your handling code here:
+        addToList(fullAccList, hiddenList);
+        DefaultListModel dlm = (DefaultListModel) hiddenList.getModel();
+        for (int i = 0; i < dlm.getSize(); i++) {
+            System.out.println(dlm.getElementAt(i));
+        }
+        List list = new ArrayList(dlm.getSize());
+        for (int i = 0; i < dlm.getSize(); i++) {
+            list.add(dlm.getElementAt(i));
+        }
+        HashSet<Object> duplicates = new HashSet<>(list);
+        dlm.removeAllElements();
+        int i = 0;
+        for (Object duplicate : duplicates) {
+            System.out.println(i);
+            dlm.add(i, duplicate + " :  " + Collections.frequency(list, duplicate));
+            i++;
+        }
+        list.removeAll(list);
+        duplicates.removeAll(duplicates);
+        selAccList.setModel(dlm);
+        newBlind.setBlindAddons(setListPrice(hiddenList, "dopłaty"));
+
+    }//GEN-LAST:event_addAccButtonActionPerformed
+
+    private void rmAccButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_rmAccButton2ActionPerformed
+        // TODO add your handling code here:
+        DefaultListModel dlm = (DefaultListModel) selAccList2.getModel();
+        if (this.selAccList2.getSelectedIndices().length > 0) {
+            int[] selectedIndices = selAccList2.getSelectedIndices();
+            for (int i = selectedIndices.length - 1; i >= 0; i--) {
+                dlm.removeElementAt(selectedIndices[i]);
+            }
+        }
+        newBlind.setBlindExtras(setListPrice(selAccList2, "automatyka"));
+    }//GEN-LAST:event_rmAccButton2ActionPerformed
+
+    private void addAccButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addAccButton2ActionPerformed
+        // TODO add your handling code here:
+        addToList(fullAccList2, selAccList2);
+        newBlind.setBlindExtras(setListPrice(selAccList2, "automatyka"));
+    }//GEN-LAST:event_addAccButton2ActionPerformed
+
     @SuppressWarnings("unused")
     private void widthxHeightLabelMouseMoved(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_widthxHeightLabelMouseMoved
         // TODO add your handling code here:
     }//GEN-LAST:event_widthxHeightLabelMouseMoved
 
-    private void formFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_formFocusGained
+    private void heightBoxFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_heightBoxFieldActionPerformed
         // TODO add your handling code here:
-    }//GEN-LAST:event_formFocusGained
+    }//GEN-LAST:event_heightBoxFieldActionPerformed
+
+    private void widthFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_widthFieldActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_widthFieldActionPerformed
+
+    private void heightFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_heightFieldActionPerformed
+
+    }//GEN-LAST:event_heightFieldActionPerformed
+
+    private void heightFieldFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_heightFieldFocusLost
+        // TODO add your handling code here:
+    }//GEN-LAST:event_heightFieldFocusLost
+
+    private void mechanicalBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mechanicalBoxActionPerformed
+        // TODO add your handling code here:
+        newBlind.setBlindAuto(setBoxPrice(mechanicalBox, "silniki"));
+    }//GEN-LAST:event_mechanicalBoxActionPerformed
+
+    private void colourBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_colourBoxActionPerformed
+        newBlind.setBlindColour(colourBox.getSelectedItem().toString());
+        newBlind.setBlindColourType(setBoxPrice(colourBox, "kolory_ceny"));
+    }//GEN-LAST:event_colourBoxActionPerformed
+
+    private void modelBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_modelBoxActionPerformed
+        // TODO add your handling code here:
+        newBlind.setBlindModel(setBoxPrice(modelBox, "modele"));
+    }//GEN-LAST:event_modelBoxActionPerformed
+
+    private void formWindowClosing(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowClosing
+        // TODO add your handling code here:
+        suncoMainWindow.setEnabled(true);
+    }//GEN-LAST:event_formWindowClosing
+
+    private void fullAccListMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_fullAccListMouseClicked
+        // TODO add your handling code here:
+        if (evt.getClickCount() == 2) {
+            addToList(fullAccList, selAccList);
+            newBlind.setBlindAddons(setListPrice(selAccList, "dopłaty"));
+        }
+
+    }//GEN-LAST:event_fullAccListMouseClicked
+
+    private void fullAccList2MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_fullAccList2MouseClicked
+        // TODO add your handling code here:
+        if (evt.getClickCount() == 2) {
+            addToList(fullAccList2, selAccList2);
+            newBlind.setBlindExtras(setListPrice(selAccList2, "automatyka"));
+        }
+    }//GEN-LAST:event_fullAccList2MouseClicked
+
+    private void selAccListMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_selAccListMouseClicked
+        // TODO add your handling code here:
+        if (evt.getClickCount() == 2) {
+            DefaultListModel dlm = (DefaultListModel) selAccList.getModel();
+            if (this.selAccList.getSelectedIndices().length > 0) {
+                int[] selectedIndices = selAccList.getSelectedIndices();
+                for (int i = selectedIndices.length - 1; i >= 0; i--) {
+                    dlm.removeElementAt(selectedIndices[i]);
+                }
+            }
+            newBlind.setBlindAddons(setListPrice(selAccList, "dopłaty"));
+        }
+    }//GEN-LAST:event_selAccListMouseClicked
+
+    private void selAccList2MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_selAccList2MouseClicked
+        // TODO add your handling code here:
+        if (evt.getClickCount() == 2) {
+            DefaultListModel dlm = (DefaultListModel) selAccList2.getModel();
+            if (this.selAccList2.getSelectedIndices().length > 0) {
+                int[] selectedIndices = selAccList2.getSelectedIndices();
+                for (int i = selectedIndices.length - 1; i >= 0; i--) {
+                    dlm.removeElementAt(selectedIndices[i]);
+                }
+            }
+            newBlind.setBlindExtras(setListPrice(selAccList2, "automatyka"));
+        }
+    }//GEN-LAST:event_selAccList2MouseClicked
 
     /**
      * @param args the command line arguments
@@ -1083,6 +1246,7 @@ public final class NewBlindFrame extends javax.swing.JFrame {
     private javax.swing.JPanel jPanel3;
     private javax.swing.JPanel jPanel4;
     private javax.swing.JPanel jPanel5;
+    private javax.swing.JPanel jPanel6;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JScrollPane jScrollPane3;
@@ -1098,6 +1262,8 @@ public final class NewBlindFrame extends javax.swing.JFrame {
     private javax.swing.JComboBox<String> modelBox;
     private javax.swing.JLabel modelLabel;
     private javax.swing.JButton nextButton;
+    private javax.swing.JToggleButton profileTogglejButton;
+    private javax.swing.JLabel profilejLabel;
     private javax.swing.JLabel quantityLabel;
     private javax.swing.JSpinner quantitySpinner;
     private javax.swing.JButton rmAccButton;

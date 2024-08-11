@@ -33,8 +33,8 @@ public class NewBlind implements Serializable {
         return blindHeight;
     }
 
-    public void setBlindHeight(double blindHeight) {
-        this.blindHeight = blindHeight;
+    public void setBlindHeight() {
+        this.blindHeight = getBlindHeightWithBox() - getBlindBox();
     }
 
     public double getBlindWidth() {
@@ -117,8 +117,8 @@ public class NewBlind implements Serializable {
         return blindHeightWithBox;
     }
 
-    public void setBlindHeightWithBox() {
-        this.blindHeightWithBox = getBlindHeight() + getBlindBox();
+    public void setBlindHeightWithBox(double blindHeightWithBox) {
+        this.blindHeightWithBox = blindHeightWithBox;
     }
 
     public void setMinBlindHeightWithBox() {

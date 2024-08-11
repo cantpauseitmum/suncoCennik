@@ -24,30 +24,31 @@ public final class DBTransfer {
 
     Connection con;
 
-    public DBTransfer() {
-
+    public DBTransfer(Connection con) {
+        this.con = con;
     }
 
-    public DBTransfer(String statement, BlindList blindList) throws SQLException, IOException {
+    public DBTransfer(String statement, BlindList blindList, Connection con) throws SQLException, IOException {
+        this.con = con;
         addToTable(blindList, statement);
     }
 
     public DBTransfer(SuncoMainWindow suncoMainWindow, BlindList blindList, String conType) throws IOException, SQLException, UnsupportedLookAndFeelException {
+        this.con = suncoMainWindow.con;
         if (blindList.offerName == null || blindList.offerName.isBlank()) {
             OfferName offerNameFrame = new OfferName(suncoMainWindow, conType, blindList);
             offerNameFrame.setLocationRelativeTo(null);
             offerNameFrame.setVisible(true);
         } else if (ifExists(blindList.offerName)) {
-            addToTable(blindList, "UPDATE rolety SET name = ?,data = ? WHERE name = '" + blindList.offerName + "'");
+            addToTable(blindList, "UPDATE rolety SET name = ?,data = ?,client-name = ?, custom-order = ?, custom-order-value = ? WHERE name = '" + blindList.offerName + "'");
             suncoMainWindow.setEnabled(true);
         } else {
-            addToTable(blindList, "INSERT INTO rolety (name, data) VALUES (?, ?)");
+            addToTable(blindList, "INSERT INTO rolety (name, data, client-name, custom-order, custom-order-value) VALUES (?, ?, ?, ?, ?)");
             suncoMainWindow.setEnabled(true);
         }
     }
 
     public void addToTable(BlindList blindList, String statement) throws SQLException, IOException {
-        this.con = DB.connect();
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         ObjectOutputStream oos = new ObjectOutputStream(baos);
         oos.writeObject(blindList.blindList);
@@ -59,6 +60,9 @@ public final class DBTransfer {
         ps = con.prepareStatement(statement);
         ps.setString(1, blindList.offerName);
         ps.setBinaryStream(2, bais);
+        ps.setString(3, blindList.clientName);
+        ps.setString(4, blindList.customOrder);
+        ps.setFloat(5, blindList.customOrderValue);
         ps.executeUpdate();
         ps.close();
         bais.close();
@@ -66,7 +70,6 @@ public final class DBTransfer {
 
     public ArrayList<DBList> getDBList() throws SQLException {
         ArrayList<DBList> dbList = new ArrayList();
-        this.con = DB.connect();
         ResultSet rs;
         PreparedStatement ps;
         try {
@@ -85,17 +88,22 @@ public final class DBTransfer {
     public BlindList getBlindList(int id) throws SQLException, IOException, ClassNotFoundException {
         BlindList blindList = new BlindList();
         blindList.blindList = new ArrayList();
-        this.con = DB.connect();
-        PreparedStatement ps = con.prepareStatement("SELECT name, data FROM rolety WHERE id = ?");
+        PreparedStatement ps = con.prepareStatement("SELECT name, data, client-name, custom-order, custom-order-value FROM rolety WHERE id = ?");
         ps.setInt(1, id);
         ResultSet rs = ps.executeQuery();
         if (rs != null) {
             while (rs.next()) {
                 String name = rs.getString("name");
                 byte[] data = rs.getBytes("data");
+                String client = rs.getString("client-name");
+                String customOrder = rs.getString("custom-order");
+                Float orderValue = rs.getFloat("custom-order-value");
                 try (ObjectInputStream ois = new ObjectInputStream(new ByteArrayInputStream(data))) {
                     blindList.blindList = (ArrayList<NewBlind>) ois.readObject();
                     blindList.offerName = name;
+                    blindList.clientName = client;
+                    blindList.customOrder = customOrder;
+                    blindList.customOrderValue = orderValue;
                 }
             }
             rs.close();
@@ -104,7 +112,6 @@ public final class DBTransfer {
     }
 
     public boolean ifExists(String name) throws SQLException {
-        this.con = DB.connect();
         PreparedStatement ps;
         ps = con.prepareStatement("SELECT EXISTS(SELECT 1 FROM rolety WHERE name = '" + name + "');");
         ResultSet rs = ps.executeQuery();
