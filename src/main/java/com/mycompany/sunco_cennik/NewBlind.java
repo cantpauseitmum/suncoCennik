@@ -105,12 +105,12 @@ public class NewBlind implements Serializable {
         this.blindAuto = blindAuto;
     }
 
-    public String getBlindColour() {
+    public BlindColours getBlindColour() {
         return blindColour;
     }
 
     public void setBlindColour(String blindColour) {
-        this.blindColour = blindColour;
+        this.blindColour = new BlindColours(blindColour);
     }
 
     public double getBlindHeightWithBox() {
@@ -145,7 +145,7 @@ public class NewBlind implements Serializable {
     private double blindWeight;
     private int blindCount;
     private BlindPriceList blindColourType;
-    private String blindColour;
+    public BlindColours blindColour = new BlindColours();
     private String blindProfile = "PA39";
     private double blindPrice;
     private ArrayList<BlindPriceList> blindAddons;

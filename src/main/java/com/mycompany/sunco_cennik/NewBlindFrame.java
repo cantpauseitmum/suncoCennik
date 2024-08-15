@@ -30,6 +30,7 @@ public final class NewBlindFrame extends javax.swing.JFrame {
     int blindIndex = -1;
     boolean profileLock = false;
     private javax.swing.JList<String> hiddenList = new JList();
+    private javax.swing.JList<String> hiddenList2 = new JList();
 
     /**
      * Creates new form NewBlindFrame
@@ -43,6 +44,7 @@ public final class NewBlindFrame extends javax.swing.JFrame {
         newBlind.setBlindCount((int) quantitySpinner.getValue());
         warningLabel.setVisible(false);
         minDimLabel.setVisible(false);
+        manageColours(false);
     }
 
     public NewBlindFrame(SuncoMainWindow suncoMainWindow, int blindIndex) throws SQLException {
@@ -53,7 +55,7 @@ public final class NewBlindFrame extends javax.swing.JFrame {
         populateBlindTables();
         this.newBlind = suncoMainWindow.blindList.blindList.get(blindIndex);
         this.modelBox.setSelectedItem(setComboBox(modelBox.getModel(), newBlind.getBlindModel().getName()));
-        this.colourBox.setSelectedItem(setComboBox(colourBox.getModel(), newBlind.getBlindColour()));
+        this.colourBox.setSelectedItem(setComboBox(colourBox.getModel(), newBlind.getBlindColour().getBoxOut()));
         this.mechanicalBox.setSelectedItem(setComboBox(mechanicalBox.getModel(), newBlind.getBlindAuto().getName()));
         if (newBlind.getBlindAddons() != null) {
             setList(this.selAccList, newBlind.getBlindAddons());
@@ -67,6 +69,7 @@ public final class NewBlindFrame extends javax.swing.JFrame {
         quantitySpinner.setValue(newBlind.getBlindCount());
         warningLabel.setVisible(false);
         minDimLabel.setVisible(false);
+        manageColours(false);
     }
 
     public NewBlindFrame(SuncoMainWindow suncoMainWindow) throws SQLException {
@@ -77,6 +80,7 @@ public final class NewBlindFrame extends javax.swing.JFrame {
         newBlind.setBlindCount((int) quantitySpinner.getValue());
         warningLabel.setVisible(false);
         minDimLabel.setVisible(false);
+        manageColours(false);
     }
 
     public String setComboBox(ComboBoxModel model, String name) {
@@ -99,6 +103,11 @@ public final class NewBlindFrame extends javax.swing.JFrame {
     public void populateBlindTables() {
         populateComboBox("select model, opis from modele", modelBox);
         populateComboBox("select rodzaj, nazwa from kolory", colourBox);
+        populateComboBox("select rodzaj, nazwa from kolory", jComboBox1);
+        populateComboBox("select rodzaj, nazwa from kolory", jComboBox2);
+        populateComboBox("select rodzaj, nazwa from kolory", jComboBox3);
+        populateComboBox("select rodzaj, nazwa from kolory", jComboBox4);
+        populateComboBox("select rodzaj, nazwa from kolory", jComboBox5);
         populateComboBox("select nazwa, moc from silniki", mechanicalBox);
         populateList("select nazwa from automatyka", fullAccList2);
         populateList("select nazwa from dopłaty", fullAccList);
@@ -338,6 +347,40 @@ public final class NewBlindFrame extends javax.swing.JFrame {
         return divided;
     }
 
+    public DefaultListModel setModelCount(ArrayList<BlindPriceList> blindPriceList) {
+        List tempList = new ArrayList();
+        for (BlindPriceList list : blindPriceList) {
+            tempList.add(list.getName());
+        }
+        DefaultListModel dlm = new DefaultListModel();
+        HashSet<String> duplicates = new HashSet<>(tempList);
+        int i = 0;
+        for (String duplicate : duplicates) {
+            dlm.add(i, duplicate + " :  " + Collections.frequency(tempList, duplicate));
+            i++;
+        }
+        return dlm;
+    }
+
+    public void manageColours(boolean change) {
+        if (change) {
+            jLabel2.setText("Skrzynka Zew:");
+        } else {
+            jLabel2.setText("Całość:");
+        }
+
+        jLabel3.setVisible(change);
+        jLabel4.setVisible(change);
+        jLabel5.setVisible(change);
+        jLabel6.setVisible(change);
+        jLabel7.setVisible(change);
+        jComboBox1.setVisible(change);
+        jComboBox2.setVisible(change);
+        jComboBox3.setVisible(change);
+        jComboBox4.setVisible(change);
+        jComboBox5.setVisible(change);
+    }
+
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -405,6 +448,18 @@ public final class NewBlindFrame extends javax.swing.JFrame {
         jPanel6 = new javax.swing.JPanel();
         profileTogglejButton = new javax.swing.JToggleButton();
         profilejLabel = new javax.swing.JLabel();
+        colourButton = new javax.swing.JButton();
+        jLabel2 = new javax.swing.JLabel();
+        jLabel3 = new javax.swing.JLabel();
+        jComboBox1 = new javax.swing.JComboBox<>();
+        jLabel4 = new javax.swing.JLabel();
+        jComboBox2 = new javax.swing.JComboBox<>();
+        jLabel5 = new javax.swing.JLabel();
+        jComboBox3 = new javax.swing.JComboBox<>();
+        jLabel6 = new javax.swing.JLabel();
+        jComboBox4 = new javax.swing.JComboBox<>();
+        jLabel7 = new javax.swing.JLabel();
+        jComboBox5 = new javax.swing.JComboBox<>();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setMinimumSize(new java.awt.Dimension(1250, 808));
@@ -705,15 +760,16 @@ public final class NewBlindFrame extends javax.swing.JFrame {
             .addGroup(jPanel4Layout.createSequentialGroup()
                 .addComponent(jScrollPane3)
                 .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel4Layout.createSequentialGroup()
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(addAccButton))
+                    .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel4Layout.createSequentialGroup()
+                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                            .addComponent(addAccButton))
+                        .addGroup(jPanel4Layout.createSequentialGroup()
+                            .addGap(29, 29, 29)
+                            .addComponent(rmAccButton)))
                     .addGroup(jPanel4Layout.createSequentialGroup()
-                        .addGap(33, 33, 33)
-                        .addComponent(jLabel1))
-                    .addGroup(jPanel4Layout.createSequentialGroup()
-                        .addGap(29, 29, 29)
-                        .addComponent(rmAccButton)))
+                        .addGap(41, 41, 41)
+                        .addComponent(jLabel1)))
                 .addGap(29, 29, 29)
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 567, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
@@ -857,6 +913,55 @@ public final class NewBlindFrame extends javax.swing.JFrame {
         profilejLabel.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
         profilejLabel.setText("Profil:");
 
+        colourButton.setText("Rozwiń");
+        colourButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                colourButtonActionPerformed(evt);
+            }
+        });
+
+        jLabel2.setText("Całość:");
+
+        jLabel3.setText("Skrzynka Wew:");
+
+        jComboBox1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jComboBox1ActionPerformed(evt);
+            }
+        });
+
+        jLabel4.setText("Profil:");
+
+        jComboBox2.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jComboBox2ActionPerformed(evt);
+            }
+        });
+
+        jLabel5.setText("Prowadnice:");
+
+        jComboBox3.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jComboBox3ActionPerformed(evt);
+            }
+        });
+
+        jLabel6.setText("Dolna Listwa:");
+
+        jComboBox4.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jComboBox4ActionPerformed(evt);
+            }
+        });
+
+        jLabel7.setText("Adapter:");
+
+        jComboBox5.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jComboBox5ActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
@@ -866,26 +971,53 @@ public final class NewBlindFrame extends javax.swing.JFrame {
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(jPanel1Layout.createSequentialGroup()
                         .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(mechanicalBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(mechanicalLabel)
-                            .addComponent(suggestedEnginePowerLabel)
                             .addGroup(jPanel1Layout.createSequentialGroup()
                                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                     .addComponent(modelLabel)
                                     .addComponent(modelBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                .addGap(18, 18, 18)
-                                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(colourBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addComponent(colourLabel))
-                                .addGap(57, 57, 57)
+                                .addGap(147, 147, 147)
                                 .addComponent(jPanel6, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addComponent(mechanicalBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(mechanicalLabel)
+                            .addComponent(suggestedEnginePowerLabel)
                             .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addGroup(jPanel1Layout.createSequentialGroup()
                                 .addGap(6, 6, 6)
                                 .addComponent(profilejLabel)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                                 .addComponent(profileTogglejButton)))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 181, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
+                                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                                    .addGroup(jPanel1Layout.createSequentialGroup()
+                                        .addComponent(jLabel3)
+                                        .addGap(18, 18, 18))
+                                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, jPanel1Layout.createSequentialGroup()
+                                        .addComponent(colourButton)
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(colourBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(colourLabel)
+                                    .addComponent(jComboBox1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
+                                .addComponent(jLabel4)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addComponent(jComboBox2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
+                                .addComponent(jLabel6)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addComponent(jComboBox4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
+                                .addComponent(jLabel5)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addComponent(jComboBox3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
+                                .addComponent(jLabel7)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addComponent(jComboBox5, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addComponent(jLabel2))
+                        .addGap(53, 53, 53)
                         .addComponent(jPanel3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addComponent(jPanel4, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
@@ -896,31 +1028,57 @@ public final class NewBlindFrame extends javax.swing.JFrame {
             .addGroup(jPanel1Layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jPanel3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addGroup(jPanel1Layout.createSequentialGroup()
                         .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jPanel6, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addGroup(jPanel1Layout.createSequentialGroup()
-                                .addGap(13, 13, 13)
+                                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(jPanel6, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addGroup(jPanel1Layout.createSequentialGroup()
+                                        .addComponent(modelLabel)
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                        .addComponent(modelBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(profilejLabel)
+                                    .addComponent(profileTogglejButton, javax.swing.GroupLayout.PREFERRED_SIZE, 23, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(suggestedEnginePowerLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 22, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(mechanicalLabel)
+                                .addGap(18, 18, 18)
+                                .addComponent(mechanicalBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addGroup(jPanel1Layout.createSequentialGroup()
                                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                                     .addComponent(colourLabel)
-                                    .addComponent(modelLabel))
+                                    .addComponent(colourButton))
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                                     .addComponent(colourBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addComponent(modelBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(profilejLabel)
-                            .addComponent(profileTogglejButton, javax.swing.GroupLayout.PREFERRED_SIZE, 23, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(suggestedEnginePowerLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 22, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(mechanicalLabel)
-                        .addGap(18, 18, 18)
-                        .addComponent(mechanicalBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addComponent(jPanel3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                                    .addComponent(jLabel2))
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                                    .addComponent(jComboBox1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(jLabel3))
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                                    .addComponent(jComboBox2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(jLabel4))
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                                    .addComponent(jComboBox4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(jLabel6))
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                                    .addComponent(jComboBox3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(jLabel5))
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                                    .addComponent(jComboBox5, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(jLabel7))))
+                        .addGap(0, 0, Short.MAX_VALUE)))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(jPanel4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(18, 18, 18)
@@ -1066,58 +1224,44 @@ public final class NewBlindFrame extends javax.swing.JFrame {
 
     private void rmAccButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_rmAccButtonActionPerformed
         // TODO add your handling code here:
-        DefaultListModel dlm = (DefaultListModel) selAccList.getModel();
+        DefaultListModel dlm = (DefaultListModel) hiddenList.getModel();
         if (this.selAccList.getSelectedIndices().length > 0) {
-            int[] selectedIndices = selAccList.getSelectedIndices();
-            for (int i = selectedIndices.length - 1; i >= 0; i--) {
-                dlm.removeElementAt(selectedIndices[i]);
+            List<String> tempList = selAccList.getSelectedValuesList();
+            for (String one : tempList) {
+                String[] temp = one.split(":");
+                dlm.removeElement(temp[0].substring(0, temp[0].length() - 1));
             }
         }
-        newBlind.setBlindAddons(setListPrice(selAccList, "dopłaty"));
+        newBlind.setBlindAddons(setListPrice(hiddenList, "dopłaty"));
+        selAccList.setModel(setModelCount(newBlind.getBlindAddons()));
     }//GEN-LAST:event_rmAccButtonActionPerformed
 
     private void addAccButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addAccButtonActionPerformed
         // TODO add your handling code here:
         addToList(fullAccList, hiddenList);
-        DefaultListModel dlm = (DefaultListModel) hiddenList.getModel();
-        for (int i = 0; i < dlm.getSize(); i++) {
-            System.out.println(dlm.getElementAt(i));
-        }
-        List list = new ArrayList(dlm.getSize());
-        for (int i = 0; i < dlm.getSize(); i++) {
-            list.add(dlm.getElementAt(i));
-        }
-        HashSet<Object> duplicates = new HashSet<>(list);
-        dlm.removeAllElements();
-        int i = 0;
-        for (Object duplicate : duplicates) {
-            System.out.println(i);
-            dlm.add(i, duplicate + " :  " + Collections.frequency(list, duplicate));
-            i++;
-        }
-        list.removeAll(list);
-        duplicates.removeAll(duplicates);
-        selAccList.setModel(dlm);
         newBlind.setBlindAddons(setListPrice(hiddenList, "dopłaty"));
-
+        selAccList.setModel(setModelCount(newBlind.getBlindAddons()));
     }//GEN-LAST:event_addAccButtonActionPerformed
 
     private void rmAccButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_rmAccButton2ActionPerformed
         // TODO add your handling code here:
-        DefaultListModel dlm = (DefaultListModel) selAccList2.getModel();
+        DefaultListModel dlm = (DefaultListModel) hiddenList2.getModel();
         if (this.selAccList2.getSelectedIndices().length > 0) {
-            int[] selectedIndices = selAccList2.getSelectedIndices();
-            for (int i = selectedIndices.length - 1; i >= 0; i--) {
-                dlm.removeElementAt(selectedIndices[i]);
+            List<String> tempList = selAccList2.getSelectedValuesList();
+            for (String one : tempList) {
+                String[] temp = one.split(":");
+                dlm.removeElement(temp[0].substring(0, temp[0].length() - 1));
             }
         }
-        newBlind.setBlindExtras(setListPrice(selAccList2, "automatyka"));
+        newBlind.setBlindExtras(setListPrice(hiddenList2, "automatyka"));
+        selAccList2.setModel(setModelCount(newBlind.getBlindExtras()));
     }//GEN-LAST:event_rmAccButton2ActionPerformed
 
     private void addAccButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addAccButton2ActionPerformed
         // TODO add your handling code here:
-        addToList(fullAccList2, selAccList2);
-        newBlind.setBlindExtras(setListPrice(selAccList2, "automatyka"));
+        addToList(fullAccList2, hiddenList2);
+        newBlind.setBlindExtras(setListPrice(hiddenList2, "automatyka"));
+        selAccList2.setModel(setModelCount(newBlind.getBlindExtras()));
     }//GEN-LAST:event_addAccButton2ActionPerformed
 
     @SuppressWarnings("unused")
@@ -1147,7 +1291,11 @@ public final class NewBlindFrame extends javax.swing.JFrame {
     }//GEN-LAST:event_mechanicalBoxActionPerformed
 
     private void colourBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_colourBoxActionPerformed
-        newBlind.setBlindColour(colourBox.getSelectedItem().toString());
+        if (!jComboBox1.isVisible()) {
+            newBlind.setBlindColour(colourBox.getSelectedItem().toString());
+        } else {
+            newBlind.blindColour.setBoxOut(colourBox.getSelectedItem().toString());
+        }
         newBlind.setBlindColourType(setBoxPrice(colourBox, "kolory_ceny"));
     }//GEN-LAST:event_colourBoxActionPerformed
 
@@ -1164,8 +1312,9 @@ public final class NewBlindFrame extends javax.swing.JFrame {
     private void fullAccListMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_fullAccListMouseClicked
         // TODO add your handling code here:
         if (evt.getClickCount() == 2) {
-            addToList(fullAccList, selAccList);
-            newBlind.setBlindAddons(setListPrice(selAccList, "dopłaty"));
+            addToList(fullAccList, hiddenList);
+            newBlind.setBlindAddons(setListPrice(hiddenList, "dopłaty"));
+            selAccList.setModel(setModelCount(newBlind.getBlindAddons()));
         }
 
     }//GEN-LAST:event_fullAccListMouseClicked
@@ -1173,38 +1322,80 @@ public final class NewBlindFrame extends javax.swing.JFrame {
     private void fullAccList2MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_fullAccList2MouseClicked
         // TODO add your handling code here:
         if (evt.getClickCount() == 2) {
-            addToList(fullAccList2, selAccList2);
-            newBlind.setBlindExtras(setListPrice(selAccList2, "automatyka"));
+            addToList(fullAccList2, hiddenList2);
+            newBlind.setBlindExtras(setListPrice(hiddenList2, "automatyka"));
+            selAccList2.setModel(setModelCount(newBlind.getBlindExtras()));
         }
     }//GEN-LAST:event_fullAccList2MouseClicked
 
     private void selAccListMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_selAccListMouseClicked
         // TODO add your handling code here:
         if (evt.getClickCount() == 2) {
-            DefaultListModel dlm = (DefaultListModel) selAccList.getModel();
+            DefaultListModel dlm = (DefaultListModel) hiddenList.getModel();
             if (this.selAccList.getSelectedIndices().length > 0) {
-                int[] selectedIndices = selAccList.getSelectedIndices();
-                for (int i = selectedIndices.length - 1; i >= 0; i--) {
-                    dlm.removeElementAt(selectedIndices[i]);
+                List<String> tempList = selAccList.getSelectedValuesList();
+                for (String one : tempList) {
+                    String[] temp = one.split(":");
+                    dlm.removeElement(temp[0].substring(0, temp[0].length() - 1));
                 }
             }
-            newBlind.setBlindAddons(setListPrice(selAccList, "dopłaty"));
+            newBlind.setBlindAddons(setListPrice(hiddenList, "dopłaty"));
+            selAccList.setModel(setModelCount(newBlind.getBlindAddons()));
         }
     }//GEN-LAST:event_selAccListMouseClicked
 
     private void selAccList2MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_selAccList2MouseClicked
         // TODO add your handling code here:
         if (evt.getClickCount() == 2) {
-            DefaultListModel dlm = (DefaultListModel) selAccList2.getModel();
+            DefaultListModel dlm = (DefaultListModel) hiddenList2.getModel();
             if (this.selAccList2.getSelectedIndices().length > 0) {
-                int[] selectedIndices = selAccList2.getSelectedIndices();
-                for (int i = selectedIndices.length - 1; i >= 0; i--) {
-                    dlm.removeElementAt(selectedIndices[i]);
+                List<String> tempList = selAccList2.getSelectedValuesList();
+                for (String one : tempList) {
+                    String[] temp = one.split(":");
+                    dlm.removeElement(temp[0].substring(0, temp[0].length() - 1));
                 }
             }
-            newBlind.setBlindExtras(setListPrice(selAccList2, "automatyka"));
+            newBlind.setBlindExtras(setListPrice(hiddenList2, "automatyka"));
+            selAccList2.setModel(setModelCount(newBlind.getBlindExtras()));
         }
     }//GEN-LAST:event_selAccList2MouseClicked
+
+    private void colourButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_colourButtonActionPerformed
+        // TODO add your handling code here:
+        if (colourButton.getText().equals("Rozwiń")) {
+            colourButton.setText("Zwiń");
+            manageColours(true);
+        } else {
+            colourButton.setText("Rozwiń");
+            manageColours(false);
+        }
+        this.pack();
+    }//GEN-LAST:event_colourButtonActionPerformed
+
+    private void jComboBox1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jComboBox1ActionPerformed
+        // TODO add your handling code here:
+        newBlind.blindColour.setBoxIn(jComboBox1.getSelectedItem().toString());
+    }//GEN-LAST:event_jComboBox1ActionPerformed
+
+    private void jComboBox2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jComboBox2ActionPerformed
+        // TODO add your handling code here:
+        newBlind.blindColour.setProfile(jComboBox2.getSelectedItem().toString());
+    }//GEN-LAST:event_jComboBox2ActionPerformed
+
+    private void jComboBox4ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jComboBox4ActionPerformed
+        // TODO add your handling code here:
+        newBlind.blindColour.setLeaders(jComboBox4.getSelectedItem().toString());
+    }//GEN-LAST:event_jComboBox4ActionPerformed
+
+    private void jComboBox3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jComboBox3ActionPerformed
+        // TODO add your handling code here:
+        newBlind.blindColour.setBotList(jComboBox3.getSelectedItem().toString());
+    }//GEN-LAST:event_jComboBox3ActionPerformed
+
+    private void jComboBox5ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jComboBox5ActionPerformed
+        // TODO add your handling code here:
+        newBlind.blindColour.setAdapter(jComboBox5.getSelectedItem().toString());
+    }//GEN-LAST:event_jComboBox5ActionPerformed
 
     /**
      * @param args the command line arguments
@@ -1227,6 +1418,7 @@ public final class NewBlindFrame extends javax.swing.JFrame {
     private javax.swing.JPanel buttonPanel;
     private javax.swing.JButton cancelButton;
     private javax.swing.JComboBox<String> colourBox;
+    private javax.swing.JButton colourButton;
     private javax.swing.JLabel colourLabel;
     private javax.swing.JLabel currentHeightLabel;
     private javax.swing.JLabel currentPriceLabel;
@@ -1240,7 +1432,18 @@ public final class NewBlindFrame extends javax.swing.JFrame {
     private javax.swing.JTextField heightBoxField;
     private javax.swing.JTextField heightField;
     private javax.swing.JLabel heightLabel;
+    private javax.swing.JComboBox<String> jComboBox1;
+    private javax.swing.JComboBox<String> jComboBox2;
+    private javax.swing.JComboBox<String> jComboBox3;
+    private javax.swing.JComboBox<String> jComboBox4;
+    private javax.swing.JComboBox<String> jComboBox5;
     private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel2;
+    private javax.swing.JLabel jLabel3;
+    private javax.swing.JLabel jLabel4;
+    private javax.swing.JLabel jLabel5;
+    private javax.swing.JLabel jLabel6;
+    private javax.swing.JLabel jLabel7;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;

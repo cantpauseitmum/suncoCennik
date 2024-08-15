@@ -24,7 +24,9 @@ com\mycompany\sunco_cennik\SuncoMainWindow$21.class
 com\mycompany\sunco_cennik\DividedBlind$6.class
 com\mycompany\sunco_cennik\PDFCreator.class
 com\mycompany\sunco_cennik\CustomOrderFrame.class
+com\mycompany\sunco_cennik\NewBlindFrame$30.class
 com\mycompany\sunco_cennik\SuncoMainWindow$24.class
+com\mycompany\sunco_cennik\NewBlindFrame$28.class
 com\mycompany\sunco_cennik\NewClientFrame$5.class
 com\mycompany\sunco_cennik\SuncoMainWindow$20.class
 com\mycompany\sunco_cennik\SuncoMainWindow$27.class
@@ -34,6 +36,7 @@ com\mycompany\sunco_cennik\OfferName.class
 com\mycompany\sunco_cennik\DBEdit$2.class
 com\mycompany\sunco_cennik\DividedBlind$1.class
 com\mycompany\sunco_cennik\OfferName$2.class
+com\mycompany\sunco_cennik\NewBlindFrame$27.class
 com\mycompany\sunco_cennik\NewBlindFrame$7.class
 com\mycompany\sunco_cennik\DBListFrame$3.class
 com\mycompany\sunco_cennik\DividedBlind$8.class
@@ -43,6 +46,7 @@ com\mycompany\sunco_cennik\DBTransfer.class
 com\mycompany\sunco_cennik\NewBlindFrame$14.class
 com\mycompany\sunco_cennik\SuncoMainWindow$26.class
 com\mycompany\sunco_cennik\NewClientFrame$6.class
+com\mycompany\sunco_cennik\NewBlindFrame$26.class
 com\mycompany\sunco_cennik\SuncoMainWindow$5.class
 com\mycompany\sunco_cennik\SuncoMainWindow$14.class
 com\mycompany\sunco_cennik\NewBlindFrame$1.class
@@ -53,6 +57,7 @@ com\mycompany\sunco_cennik\SuncoMainWindow$9.class
 com\mycompany\sunco_cennik\DBListFrame$2.class
 com\mycompany\sunco_cennik\SuncoMainWindow$12.class
 com\mycompany\sunco_cennik\SuncoMainWindow$25.class
+com\mycompany\sunco_cennik\NewBlindFrame$31.class
 com\mycompany\sunco_cennik\SuncoMainWindow$15.class
 com\mycompany\sunco_cennik\OfferName$3.class
 com\mycompany\sunco_cennik\DividedBlind$11.class
@@ -95,6 +100,8 @@ com\mycompany\sunco_cennik\SuncoMainWindow$11.class
 com\mycompany\sunco_cennik\CustomOrderFrame$1.class
 com\mycompany\sunco_cennik\DB.class
 com\mycompany\sunco_cennik\DBListFrame$1.class
+com\mycompany\sunco_cennik\BlindColours.class
+com\mycompany\sunco_cennik\NewBlindFrame$29.class
 com\mycompany\sunco_cennik\NewBlindFrame$11.class
 com\mycompany\sunco_cennik\NewBlindFrame$4.class
 com\mycompany\sunco_cennik\SuncoMainWindow$1.class
