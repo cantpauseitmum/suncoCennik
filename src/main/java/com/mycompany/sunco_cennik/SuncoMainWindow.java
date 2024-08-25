@@ -94,7 +94,7 @@ public final class SuncoMainWindow extends javax.swing.JFrame {
                     holdingModel.getRowCount() + 1,
                     newBlind.getBlindModel().getName(),
                     newBlind.getBlindCount(),
-                    newBlind.getBlindColour(),
+                    newBlind.getBlindColour().getBoxOut(),
                     newBlind.getBlindWidth() * 1000 + "x" + newBlind.getBlindHeightWithBox() * 1000,
                     blindProfiles,
                     toArray(newBlind.getBlindAddons()),
@@ -107,7 +107,7 @@ public final class SuncoMainWindow extends javax.swing.JFrame {
                     holdingModel.getRowCount() + 1,
                     newBlind.getBlindModel().getName(),
                     newBlind.getBlindCount(),
-                    newBlind.getBlindColour(),
+                    newBlind.getBlindColour().getBoxOut(),
                     newBlind.getBlindWidth() * 1000 + "x" + newBlind.getBlindHeightWithBox() * 1000,
                     newBlind.getBlindProfile(),
                     toArray(newBlind.getBlindAddons()),
@@ -521,7 +521,7 @@ public final class SuncoMainWindow extends javax.swing.JFrame {
         try {
             this.setEnabled(false);
             if (!blindList.blindList.isEmpty()) {
-                NewBlindFrame newBlindFrame = new NewBlindFrame(this, blindList.blindList.size() - 1);
+                NewBlindFrame newBlindFrame = new NewBlindFrame(this, blindList.blindList.size() - 1, false);
                 newBlindFrame.setDefaultCloseOperation(DISPOSE_ON_CLOSE);
                 newBlindFrame.setLocationRelativeTo(null);
                 newBlindFrame.pack();
@@ -692,7 +692,7 @@ public final class SuncoMainWindow extends javax.swing.JFrame {
         try {
             NewBlind newBlind = blindList.blindList.get(jTable1.getSelectedRow());
             this.setEnabled(false);
-            NewBlindFrame newBlindFrame = new NewBlindFrame(this, jTable1.getSelectedRow());
+            NewBlindFrame newBlindFrame = new NewBlindFrame(this, jTable1.getSelectedRow(), true);
             newBlindFrame.setDefaultCloseOperation(DISPOSE_ON_CLOSE);
             newBlindFrame.setLocationRelativeTo(null);
             newBlindFrame.pack();

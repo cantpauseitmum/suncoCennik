@@ -25,6 +25,14 @@ public final class BlindColours implements Serializable {
         setAdapter(colour);
     }
 
+    public boolean WholeColour() {
+        return (boxOut == null ? boxIn == null : boxOut.equals(boxIn))
+                && (boxOut == null ? profile == null : boxOut.equals(profile))
+                && (boxOut == null ? botList == null : boxOut.equals(botList))
+                && (boxOut == null ? leaders == null : boxOut.equals(leaders))
+                && (boxOut == null ? adapter == null : boxOut.equals(adapter));
+    }
+
     public String getBoxOut() {
         return boxOut;
     }

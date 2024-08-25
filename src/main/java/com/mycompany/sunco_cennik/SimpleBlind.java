@@ -10,7 +10,7 @@ import java.io.Serializable;
  *
  * @author Hubert
  */
-public class SimpleBlind implements Serializable{
+public class SimpleBlind implements Serializable {
 
     public double getBlindBox() {
         return blindBox;
@@ -24,8 +24,9 @@ public class SimpleBlind implements Serializable{
         return blindHeight;
     }
 
-    public void setBlindHeight(double blindHeight) {
-        this.blindHeight = blindHeight;
+    public void setBlindHeight() {
+
+        this.blindHeight = getBlindHeightWithBox() - getBlindBox();
     }
 
     public double getBlindWidth() {
@@ -40,8 +41,8 @@ public class SimpleBlind implements Serializable{
         return blindHeightWithBox;
     }
 
-    public void setBlindHeightWithBox() {
-        this.blindHeightWithBox = getBlindHeight() + getBlindBox();
+    public void setBlindHeightWithBox(double blindHeightWithBox) {
+        this.blindHeightWithBox = blindHeightWithBox;
     }
 
     public double getBlindWeight() {
@@ -74,6 +75,10 @@ public class SimpleBlind implements Serializable{
 
     public void setSimpleBlindPrice(double simpleBlindPrice) {
         this.simpleBlindPrice = simpleBlindPrice;
+    }
+
+    public void setMinBlindHeightWithBox() {
+        this.blindHeightWithBox = 1.5 / getBlindWidth();
     }
 
     private double blindBox;

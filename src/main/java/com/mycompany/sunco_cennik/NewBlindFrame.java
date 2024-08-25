@@ -47,21 +47,26 @@ public final class NewBlindFrame extends javax.swing.JFrame {
         manageColours(false);
     }
 
-    public NewBlindFrame(SuncoMainWindow suncoMainWindow, int blindIndex) throws SQLException {
+    public NewBlindFrame(SuncoMainWindow suncoMainWindow, int blindIndex, boolean update) throws SQLException {
         initComponents();
         this.blindIndex = blindIndex;
         this.connection = suncoMainWindow.con;
         this.suncoMainWindow = suncoMainWindow;
         populateBlindTables();
-        this.newBlind = suncoMainWindow.blindList.blindList.get(blindIndex);
+        newBlind.setBlind(suncoMainWindow.blindList.blindList.get(blindIndex));
+        if (!update) {
+            this.blindIndex = -1;
+        }
         this.modelBox.setSelectedItem(setComboBox(modelBox.getModel(), newBlind.getBlindModel().getName()));
         this.colourBox.setSelectedItem(setComboBox(colourBox.getModel(), newBlind.getBlindColour().getBoxOut()));
         this.mechanicalBox.setSelectedItem(setComboBox(mechanicalBox.getModel(), newBlind.getBlindAuto().getName()));
         if (newBlind.getBlindAddons() != null) {
-            setList(this.selAccList, newBlind.getBlindAddons());
+            this.hiddenList = newBlind.getHiddenList();
+            selAccList.setModel(setModelCount(newBlind.getBlindAddons()));
         }
         if (newBlind.getBlindExtras() != null) {
-            setList(this.selAccList2, newBlind.getBlindExtras());
+            this.hiddenList2 = newBlind.getHiddenList2();
+            selAccList2.setModel(setModelCount(newBlind.getBlindExtras()));
         }
         this.heightBoxField.setText(String.valueOf(1000 * newBlind.getBlindBox()));
         this.widthField.setText(String.valueOf(1000 * newBlind.getBlindWidth()));
@@ -232,6 +237,7 @@ public final class NewBlindFrame extends javax.swing.JFrame {
 
             }
             case "mbW" -> {
+//                System.out.println(newBlind.getBlindHeightWithBox() - newBlind.getBlindBox() + " | " + blindPriceList.getPrice() + " | " + ComponentPrice.runningMeter(blindPriceList.getPrice(), newBlind.getBlindHeightWithBox() - newBlind.getBlindBox()));
                 boxPrice = ComponentPrice.runningMeter(blindPriceList.getPrice(), newBlind.getBlindHeightWithBox() - newBlind.getBlindBox());
                 break;
 
@@ -289,10 +295,10 @@ public final class NewBlindFrame extends javax.swing.JFrame {
             newBlind.setBlindAuto(setBoxPrice(mechanicalBox, "silniki"));
             fullBlindPrice += calculatePrice(newBlind.getBlindAuto());
 //            System.out.println(fullBlindPrice);
-            newBlind.setBlindAddons(setListPrice(selAccList, "dopłaty"));
+            newBlind.setBlindAddons(setListPrice(hiddenList, "dopłaty"));
             fullBlindPrice += calculatePrice(newBlind.getBlindAddons());
 //            System.out.println(fullBlindPrice);
-            newBlind.setBlindExtras(setListPrice(selAccList2, "automatyka"));
+            newBlind.setBlindExtras(setListPrice(hiddenList2, "automatyka"));
             fullBlindPrice += calculatePrice(newBlind.getBlindExtras());
 //            System.out.println(fullBlindPrice);
             String currency;
@@ -1126,13 +1132,13 @@ public final class NewBlindFrame extends javax.swing.JFrame {
         // TODO add your handling code here:
         if (!widthField.getText().isBlank() || !heightField.getText().isBlank() || !heightBoxField.getText().isBlank()) {
             double paramTest = Double.parseDouble(widthField.getText()) * (Double.parseDouble(heightField.getText()) + Double.parseDouble(heightBoxField.getText()));
-            newBlind.setBlindBox(round(0.001 * Double.parseDouble(heightBoxField.getText()), 3));
-            newBlind.setBlindWidth(round(0.001 * Double.parseDouble(widthField.getText()), 3));
+            newBlind.setBlindBox(0.001 * Double.parseDouble(heightBoxField.getText()));
+            newBlind.setBlindWidth(0.001 * Double.parseDouble(widthField.getText()));
             if (paramTest < 1500000) {
                 newBlind.setMinBlindHeightWithBox();
                 minDimLabel.setVisible(true);
             } else {
-                newBlind.setBlindHeightWithBox(round(0.001 * Double.parseDouble(heightField.getText()), 3));
+                newBlind.setBlindHeightWithBox(0.001 * Double.parseDouble(heightField.getText()));
                 minDimLabel.setVisible(false);
             }
             newBlind.setBlindHeight();
@@ -1193,15 +1199,15 @@ public final class NewBlindFrame extends javax.swing.JFrame {
         newBlind.setSimpleBlind(null);
         if (texstsOK) {
             warningLabel.setVisible(true);
-        } else if (!texstsOK && isDivided(selAccList) > 0) {
+        } else if (!texstsOK && isDivided(hiddenList) > 0) {
             try {
                 setSemiBlindPrice();
                 if (blindIndex >= 0) {
-                    DividedBlind dividedBlind = new DividedBlind(this, newBlind, isDivided(selAccList) - 1, blindIndex);
+                    DividedBlind dividedBlind = new DividedBlind(this, newBlind, isDivided(hiddenList) - 1, blindIndex);
                     dividedBlind.setLocationRelativeTo(null);
                     dividedBlind.setVisible(true);
                 } else {
-                    DividedBlind dividedBlind = new DividedBlind(this, newBlind, isDivided(selAccList) - 1);
+                    DividedBlind dividedBlind = new DividedBlind(this, newBlind, isDivided(hiddenList) - 1);
                     dividedBlind.setLocationRelativeTo(null);
                     dividedBlind.setVisible(true);
                 }
@@ -1232,6 +1238,7 @@ public final class NewBlindFrame extends javax.swing.JFrame {
                 dlm.removeElement(temp[0].substring(0, temp[0].length() - 1));
             }
         }
+        newBlind.setHiddenList(this.hiddenList);
         newBlind.setBlindAddons(setListPrice(hiddenList, "dopłaty"));
         selAccList.setModel(setModelCount(newBlind.getBlindAddons()));
     }//GEN-LAST:event_rmAccButtonActionPerformed
@@ -1239,6 +1246,7 @@ public final class NewBlindFrame extends javax.swing.JFrame {
     private void addAccButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addAccButtonActionPerformed
         // TODO add your handling code here:
         addToList(fullAccList, hiddenList);
+        newBlind.setHiddenList(this.hiddenList);
         newBlind.setBlindAddons(setListPrice(hiddenList, "dopłaty"));
         selAccList.setModel(setModelCount(newBlind.getBlindAddons()));
     }//GEN-LAST:event_addAccButtonActionPerformed
@@ -1253,6 +1261,7 @@ public final class NewBlindFrame extends javax.swing.JFrame {
                 dlm.removeElement(temp[0].substring(0, temp[0].length() - 1));
             }
         }
+        newBlind.setHiddenList2(this.hiddenList2);
         newBlind.setBlindExtras(setListPrice(hiddenList2, "automatyka"));
         selAccList2.setModel(setModelCount(newBlind.getBlindExtras()));
     }//GEN-LAST:event_rmAccButton2ActionPerformed
@@ -1260,6 +1269,7 @@ public final class NewBlindFrame extends javax.swing.JFrame {
     private void addAccButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addAccButton2ActionPerformed
         // TODO add your handling code here:
         addToList(fullAccList2, hiddenList2);
+        newBlind.setHiddenList2(this.hiddenList2);
         newBlind.setBlindExtras(setListPrice(hiddenList2, "automatyka"));
         selAccList2.setModel(setModelCount(newBlind.getBlindExtras()));
     }//GEN-LAST:event_addAccButton2ActionPerformed
@@ -1313,6 +1323,7 @@ public final class NewBlindFrame extends javax.swing.JFrame {
         // TODO add your handling code here:
         if (evt.getClickCount() == 2) {
             addToList(fullAccList, hiddenList);
+            newBlind.setHiddenList(this.hiddenList);
             newBlind.setBlindAddons(setListPrice(hiddenList, "dopłaty"));
             selAccList.setModel(setModelCount(newBlind.getBlindAddons()));
         }
@@ -1323,6 +1334,7 @@ public final class NewBlindFrame extends javax.swing.JFrame {
         // TODO add your handling code here:
         if (evt.getClickCount() == 2) {
             addToList(fullAccList2, hiddenList2);
+            newBlind.setHiddenList2(this.hiddenList2);
             newBlind.setBlindExtras(setListPrice(hiddenList2, "automatyka"));
             selAccList2.setModel(setModelCount(newBlind.getBlindExtras()));
         }
@@ -1339,6 +1351,7 @@ public final class NewBlindFrame extends javax.swing.JFrame {
                     dlm.removeElement(temp[0].substring(0, temp[0].length() - 1));
                 }
             }
+            newBlind.setHiddenList(this.hiddenList);
             newBlind.setBlindAddons(setListPrice(hiddenList, "dopłaty"));
             selAccList.setModel(setModelCount(newBlind.getBlindAddons()));
         }
@@ -1355,6 +1368,7 @@ public final class NewBlindFrame extends javax.swing.JFrame {
                     dlm.removeElement(temp[0].substring(0, temp[0].length() - 1));
                 }
             }
+            newBlind.setHiddenList2(this.hiddenList2);
             newBlind.setBlindExtras(setListPrice(hiddenList2, "automatyka"));
             selAccList2.setModel(setModelCount(newBlind.getBlindExtras()));
         }

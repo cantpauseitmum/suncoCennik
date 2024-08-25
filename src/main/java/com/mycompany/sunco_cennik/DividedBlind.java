@@ -317,7 +317,7 @@ public class DividedBlind extends javax.swing.JFrame {
         });
 
         heightLabel.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
-        heightLabel.setText("Wysokość okna [mm]:");
+        heightLabel.setText("Wysokość [mm]:");
 
         widthField.setMinimumSize(new java.awt.Dimension(100, 22));
         widthField.setPreferredSize(new java.awt.Dimension(100, 22));
@@ -328,7 +328,7 @@ public class DividedBlind extends javax.swing.JFrame {
         });
 
         widthLabel.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
-        widthLabel.setText("Szerokość okna [mm]:");
+        widthLabel.setText("Szerokość [mm]:");
 
         currentHeightLabel.setFont(new java.awt.Font("Segoe UI", 3, 12)); // NOI18N
         currentHeightLabel.setText("Wysokość pancerza [mm]:");
@@ -549,14 +549,12 @@ public class DividedBlind extends javax.swing.JFrame {
             double paramTest = Double.parseDouble(widthField.getText()) * (Double.parseDouble(heightField.getText()) + newBlind.getBlindBox());
             double maxWidth = 1000 * newBlind.getBlindWidth();
             if (newBlind.getSimpleBlind() != null) {
-                maxWidth = 1000 * maxWidth(newBlind.getSimpleBlind());
+                maxWidth = round(1000 * maxWidth(newBlind.getSimpleBlind()),0);
             }
-            if (paramTest < 1500000 && Double.parseDouble(widthField.getText()) > maxWidth) {
-                minDimLabel.setVisible(true);
-                nextButton.setEnabled(false);
-                maxWidthLabel.setVisible(true);
-            } else if (paramTest < 1500000) {
-                nextButton.setEnabled(false);
+            System.out.println(maxWidth);
+            if (paramTest < 1500000) {
+                simpleBlind.setMinBlindHeightWithBox();
+                nextButton.setEnabled(true);
                 minDimLabel.setVisible(true);
                 maxWidthLabel.setVisible(false);
             } else if (Double.parseDouble(widthField.getText()) > maxWidth) {
@@ -566,8 +564,8 @@ public class DividedBlind extends javax.swing.JFrame {
             } else {
                 simpleBlind.setBlindBox(newBlind.getBlindBox());
                 simpleBlind.setBlindWidth(0.001 * Double.parseDouble(widthField.getText()));
-                simpleBlind.setBlindHeight(0.001 * Double.parseDouble(heightField.getText()));
-                simpleBlind.setBlindHeightWithBox();
+                simpleBlind.setBlindHeightWithBox(0.001 * Double.parseDouble(heightField.getText()));
+                simpleBlind.setBlindHeight();
                 simpleBlind.setBlindWeight();
                 blindWeightLabel.setText(String.valueOf(round(simpleBlind.getBlindWeight(), 3)));
                 blindHeightLabel.setText(String.valueOf(round(simpleBlind.getBlindHeightWithBox(), 3)));

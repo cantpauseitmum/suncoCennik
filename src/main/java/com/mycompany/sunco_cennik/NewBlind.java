@@ -6,12 +6,49 @@ package com.mycompany.sunco_cennik;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import javax.swing.JList;
 
 /**
  *
  * @author Hubert
  */
 public class NewBlind implements Serializable {
+
+    public void setBlind(NewBlind blind) {
+        blindModel = blind.blindModel;
+        blindBox = blind.blindBox;
+        blindHeight = blind.blindHeight;
+        blindWidth = blind.blindWidth;
+        blindHeightWithBox = blind.blindHeightWithBox;
+        blindWeight = blind.blindWeight;
+        blindCount = blind.blindCount;
+        blindColourType = blind.blindColourType;
+        blindColour = blind.blindColour;
+        blindProfile = blind.blindProfile;
+        blindPrice = blind.blindPrice;
+        blindAddons = blind.blindAddons;
+        blindExtras = blind.blindExtras;
+        blindAuto = blind.blindAuto;
+        simpleBlind = blind.simpleBlind;
+        hiddenList = blind.hiddenList;
+        hiddenList2 = blind.hiddenList2;
+    }
+
+    public JList<String> getHiddenList() {
+        return hiddenList;
+    }
+
+    public void setHiddenList(JList<String> hiddenList) {
+        this.hiddenList = hiddenList;
+    }
+
+    public JList<String> getHiddenList2() {
+        return hiddenList2;
+    }
+
+    public void setHiddenList2(JList<String> hiddenList2) {
+        this.hiddenList2 = hiddenList2;
+    }
 
     public double getBlindBox() {
         return blindBox;
@@ -152,5 +189,6 @@ public class NewBlind implements Serializable {
     private ArrayList<BlindPriceList> blindExtras;
     private BlindPriceList blindAuto;
     private ArrayList<SimpleBlind> simpleBlind;
-
+    private javax.swing.JList<String> hiddenList = new JList();
+    private javax.swing.JList<String> hiddenList2 = new JList();
 }
